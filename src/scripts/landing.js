@@ -46,11 +46,11 @@ themeToggle.addEventListener('click', function() {
     if (currentTheme === 'dark') {
         document.documentElement.removeAttribute('data-theme');
         themeToggle.textContent = 'Dark Mode';
-        logoImage.src = logoLight;
+        logoImage.src = logoLight.src;
     } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.textContent = 'Light Mode';
-        logoImage.src = logoDark;
+        logoImage.src = logoDark.src;
     }
 });
 
