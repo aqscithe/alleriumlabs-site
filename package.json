@@ -9,6 +9,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.7.13"
+    "astro": "^5.7.13",
+    "dat.gui": "^0.7.9",
+    "wgpu-matrix": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.13",
+    "@webgpu/types": "^0.1.61"
   }
 }

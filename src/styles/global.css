@@ -1,4 +1,3 @@
-
 /* src/styles/global.css */
 
 /* Font face declaration for Gilroy */
@@ -115,6 +114,7 @@ body, html {
 
 .logo-section {
     background-color: var(--al-bg-primary);
+    opacity: 1;
 }
 
 .logo-container {
@@ -125,41 +125,6 @@ body, html {
 .logo-container img {
     width: 100%;
     height: auto;
-}
-
-.welcome-section {
-    background-color: var(--al-bg-secondary);
-}
-
-.welcome-message {
-    max-width: 800px;
-    text-align: center;
-    padding: var(--spacing-xl);
-}
-
-.welcome-message h1 {
-    font-size: var(--font-size-5xl);
-    color: var(--al-accent);
-    margin-bottom: var(--spacing-lg);
-    font-family: var(--font-primary);
-    font-weight: var(--font-medium);
-}
-
-.welcome-message p {
-    font-size: var(--font-size-xl);
-    line-height: 1.6;
-    font-family: var(--font-secondary);
-}
-
-.final-section {
-    background-color: var(--al-bg-light);
-}
-
-.final-message {
-    font-size: var(--font-size-4xl);
-    font-style: italic;
-    color: var(--al-text-primary);
-    font-family: var(--font-primary);
 }
 
 .theme-toggle {
@@ -174,6 +139,21 @@ body, html {
     border-radius: 4px;
     cursor: pointer;
     font-family: var(--font-secondary);
+}
+
+#webgpu-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1; /* Bring to front for testing */
+    /* pointer-events: none; */ /* Allow interactions for testing */
+}
+
+/* Ensure dat.gui appears above the canvas */
+.dg.ac {
+    z-index: 1000 !important;
 }
 
 /*
