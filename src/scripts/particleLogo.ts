@@ -81,7 +81,7 @@ function createFallbackLogo() {
   
   // Create logo image
   const logoImg = document.createElement('img');
-  logoImg.src = '/img/Logo_Norm_res.png';
+  logoImg.src = '/img/Logo_High_White_text.png';
   logoImg.alt = 'Allerium Labs Logo';
   logoImg.style.cssText = `
     max-width: 400px;
@@ -119,17 +119,6 @@ function createFallbackLogo() {
   document.head.appendChild(style);
   fallbackContainer.appendChild(logoImg);
   heroContent.appendChild(fallbackContainer);
-  
-  // Add a subtle message about WebGPU
-  const message = document.createElement('div');
-  message.style.cssText = `
-    margin-top: 20px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    font-family: 'Gilroy-Medium', sans-serif;
-  `;
-  message.textContent = 'For the best experience, try a WebGPU-enabled browser';
-  fallbackContainer.appendChild(message);
 }
 
 // Simple WebGPU availability check

@@ -1,4 +1,4 @@
-import logoLight from "../assets/img/full-logo/Logo_High_res.png";
+import logoLight from "../assets/img/full-logo/Logo_High_White_text.png";
 import logoDark from "../assets/img/full-logo/Logo_White.png";
     
 // Set dark mode as default
