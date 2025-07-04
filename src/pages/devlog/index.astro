@@ -26,6 +26,24 @@ const sortedEntries = await Promise.all(
     })
 );
 
+// Extract all unique tags
+const allTags = [...new Set(
+  sortedEntries.flatMap(entry => entry.frontmatter.tags || [])
+)].sort();
+
+// Group entries by year and month for archive
+const archiveData = sortedEntries.reduce((acc: any, entry) => {
+  const date = new Date(entry.frontmatter.date);
+  const year = date.getFullYear();
+  const month = date.toLocaleDateString('en-US', { month: 'long' });
+  
+  if (!acc[year]) acc[year] = {};
+  if (!acc[year][month]) acc[year][month] = [];
+  
+  acc[year][month].push(entry);
+  return acc;
+}, {});
+
 // Function to format date
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -56,6 +74,88 @@ function formatDate(dateString: string) {
           </div>
         </div>
       </header>
+
+      <!-- Enhanced Controls Section -->
+      <section class="devlog-controls">
+        <div class="container">
+          <!-- Search and Filter Controls -->
+          <div class="controls-grid">
+            <div class="search-section">
+              <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search posts..." />
+                <button id="searchButton">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-section">
+              <div class="filter-controls">
+                <select id="tagFilter">
+                  <option value="">All Tags</option>
+                  {allTags.map(tag => (
+                    <option value={tag}>{tag}</option>
+                  ))}
+                </select>
+                
+                <select id="sortOrder">
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="title">By Title</option>
+                </select>
+                
+                <button id="viewToggle" class="view-toggle" title="Toggle view">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tag Cloud -->
+          <div class="tag-cloud">
+            <h3>Popular Tags</h3>
+            <div class="tag-buttons">
+              {allTags.map(tag => {
+                const count = sortedEntries.filter(entry => 
+                  entry.frontmatter.tags?.includes(tag)
+                ).length;
+                return (
+                  <button class="tag-button" data-tag={tag}>
+                    {tag} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <!-- Archive Timeline -->
+          <div class="archive-timeline">
+            <h3>Archive</h3>
+            <div class="timeline-container">
+              {Object.entries(archiveData).map(([year, months]) => (
+                <div class="timeline-year">
+                  <h4>{year}</h4>
+                  <div class="timeline-months">
+                    {Object.entries(months as any).map(([month, posts]) => (
+                      <button class="timeline-month" data-year={year} data-month={month}>
+                        {month} ({(posts as any[]).length})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Devlog Entries Section -->
       <section class="devlog-entries">
@@ -106,5 +206,195 @@ function formatDate(dateString: string) {
         </div>
       </footer>
     </main>
+
+    <!-- Enhanced Devlog Controls Script -->
+    <script>
+      class DevlogControls {
+        private entries: HTMLElement[] = [];
+        private isListView: boolean = false;
+
+        constructor() {
+          this.entries = Array.from(document.querySelectorAll('.devlog-entry'));
+          this.setupEventListeners();
+        }
+
+        private setupEventListeners(): void {
+          // Search functionality
+          const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+          const searchButton = document.getElementById('searchButton') as HTMLButtonElement;
+          
+          searchInput?.addEventListener('input', (e) => {
+            const query = (e.target as HTMLInputElement).value.toLowerCase();
+            this.filterEntries(query);
+          });
+
+          searchButton?.addEventListener('click', () => {
+            const query = searchInput?.value.toLowerCase() || '';
+            this.filterEntries(query);
+          });
+
+          // Tag filtering
+          const tagFilter = document.getElementById('tagFilter') as HTMLSelectElement;
+          tagFilter?.addEventListener('change', (e) => {
+            const tag = (e.target as HTMLSelectElement).value;
+            this.filterByTag(tag);
+          });
+
+          // Sort order
+          const sortOrder = document.getElementById('sortOrder') as HTMLSelectElement;
+          sortOrder?.addEventListener('change', (e) => {
+            const order = (e.target as HTMLSelectElement).value;
+            this.sortEntries(order);
+          });
+
+          // View toggle
+          const viewToggle = document.getElementById('viewToggle') as HTMLButtonElement;
+          viewToggle?.addEventListener('click', () => {
+            this.toggleView();
+          });
+
+          // Tag cloud buttons
+          document.querySelectorAll('.tag-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+              const tag = (e.target as HTMLButtonElement).dataset.tag;
+              if (tag) {
+                this.filterByTag(tag);
+                if (tagFilter) tagFilter.value = tag;
+              }
+            });
+          });
+
+          // Archive timeline
+          document.querySelectorAll('.timeline-month').forEach(button => {
+            button.addEventListener('click', (e) => {
+              const target = e.target as HTMLButtonElement;
+              const year = target.dataset.year;
+              const month = target.dataset.month;
+              if (year && month) {
+                this.filterByDate(year, month);
+              }
+            });
+          });
+        }
+
+        private filterEntries(query: string): void {
+          this.entries.forEach(entry => {
+            const title = entry.querySelector('h2')?.textContent?.toLowerCase() || '';
+            const excerpt = entry.querySelector('.entry-text p')?.textContent?.toLowerCase() || '';
+            const tags = Array.from(entry.querySelectorAll('.tag'))
+              .map(tag => tag.textContent?.toLowerCase() || '').join(' ');
+            
+            const matches = title.includes(query) || excerpt.includes(query) || tags.includes(query);
+            
+            if (matches || query === '') {
+              entry.style.display = 'block';
+              entry.style.opacity = '1';
+            } else {
+              entry.style.display = 'none';
+              entry.style.opacity = '0';
+            }
+          });
+        }
+
+        private filterByTag(tag: string): void {
+          this.entries.forEach(entry => {
+            const entryTags = Array.from(entry.querySelectorAll('.tag'))
+              .map(t => t.textContent?.trim() || '');
+            
+            const matches = tag === '' || entryTags.includes(tag);
+            
+            if (matches) {
+              entry.style.display = 'block';
+              entry.style.opacity = '1';
+            } else {
+              entry.style.display = 'none';
+              entry.style.opacity = '0';
+            }
+          });
+        }
+
+        private filterByDate(year: string, month: string): void {
+          this.entries.forEach(entry => {
+            const dateElement = entry.querySelector('.entry-date');
+            const dateText = dateElement?.textContent || '';
+            
+            const matches = dateText.includes(year) && dateText.includes(month);
+            
+            if (matches) {
+              entry.style.display = 'block';
+              entry.style.opacity = '1';
+            } else {
+              entry.style.display = 'none';
+              entry.style.opacity = '0';
+            }
+          });
+        }
+
+        private sortEntries(order: string): void {
+          const container = document.querySelector('.entries-grid');
+          if (!container) return;
+
+          const sortedEntries = [...this.entries].sort((a, b) => {
+            switch (order) {
+              case 'oldest':
+                const dateA = new Date(a.querySelector('.entry-date')?.textContent || '');
+                const dateB = new Date(b.querySelector('.entry-date')?.textContent || '');
+                return dateA.getTime() - dateB.getTime();
+              
+              case 'title':
+                const titleA = a.querySelector('h2')?.textContent || '';
+                const titleB = b.querySelector('h2')?.textContent || '';
+                return titleA.localeCompare(titleB);
+              
+              default: // newest
+                const dateC = new Date(a.querySelector('.entry-date')?.textContent || '');
+                const dateD = new Date(b.querySelector('.entry-date')?.textContent || '');
+                return dateD.getTime() - dateC.getTime();
+            }
+          });
+
+          // Reorder DOM elements
+          sortedEntries.forEach(entry => container.appendChild(entry));
+        }
+
+        private toggleView(): void {
+          const grid = document.querySelector('.entries-grid');
+          const button = document.getElementById('viewToggle');
+          
+          if (!grid || !button) return;
+
+          this.isListView = !this.isListView;
+          
+          if (this.isListView) {
+            grid.classList.add('list-view');
+            button.innerHTML = `
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            `;
+          } else {
+            grid.classList.remove('list-view');
+            button.innerHTML = `
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            `;
+          }
+        }
+      }
+
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        new DevlogControls();
+      });
+    </script>
   </body>
 </html> 

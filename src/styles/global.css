@@ -140,6 +140,17 @@ body, html {
     pointer-events: none; /* Allow scrolling through canvas */
 }
 
+/* Starbursts Canvas - positioned behind everything */
+#starbursts-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
 /* Hero Section */
 .hero-section {
     height: 100vh;
@@ -151,6 +162,7 @@ body, html {
     position: relative;
     z-index: 2;
     background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+    cursor: pointer; /* Indicate clickable area */
 }
 
 .hero-content {

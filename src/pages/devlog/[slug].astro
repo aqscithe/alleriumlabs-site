@@ -7,18 +7,28 @@ import '../../styles/devlog-post.css';
 export async function getStaticPaths() {
   const devlogEntries: any[] = await Astro.glob('../../devlogs/*.md');
   
-  return devlogEntries
+  // Sort entries by date for navigation
+  const sortedEntries = devlogEntries
     .filter((entry: any) => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
-    .map((entry: any) => {
-      const slug = entry.file.split('/').pop()?.replace('.md', '');
-      return {
-        params: { slug },
-        props: { entry }
-      };
-    });
+    .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+  
+  return sortedEntries.map((entry: any, index: number) => {
+    const slug = entry.file.split('/').pop()?.replace('.md', '');
+    const previousPost = index < sortedEntries.length - 1 ? sortedEntries[index + 1] : null;
+    const nextPost = index > 0 ? sortedEntries[index - 1] : null;
+    
+    return {
+      params: { slug },
+      props: { 
+        entry,
+        previousPost,
+        nextPost
+      }
+    };
+  });
 }
 
-const { entry } = Astro.props;
+const { entry, previousPost, nextPost } = Astro.props;
 const { Content } = entry;
 
 // Function to format date
@@ -102,10 +112,52 @@ const readingTime = Math.ceil(words / wordsPerMinute);
         </div>
       </article>
 
-      <!-- Navigation -->
+      <!-- Enhanced Post Navigation -->
       <nav class="post-navigation">
         <div class="container">
-          <a href="/devlog" class="nav-button">← All Devlog Posts</a>
+          <div class="post-nav-grid">
+            {previousPost && (
+              <a href={`/devlog/${previousPost.file.split('/').pop()?.replace('.md', '')}`} class="nav-post-card nav-post-previous">
+                <div class="nav-post-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                  </svg>
+                  Previous Post
+                </div>
+                <div class="nav-post-title">{previousPost.frontmatter.title}</div>
+                <div class="nav-post-excerpt">{previousPost.frontmatter.excerpt}</div>
+                <div class="nav-post-meta">
+                  <span>{formatDate(previousPost.frontmatter.date)}</span>
+                  {previousPost.frontmatter.tags && (
+                    <span>{previousPost.frontmatter.tags.length} tags</span>
+                  )}
+                </div>
+              </a>
+            )}
+            
+            {nextPost && (
+              <a href={`/devlog/${nextPost.file.split('/').pop()?.replace('.md', '')}`} class="nav-post-card nav-post-next">
+                <div class="nav-post-label">
+                  Next Post
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                  </svg>
+                </div>
+                <div class="nav-post-title">{nextPost.frontmatter.title}</div>
+                <div class="nav-post-excerpt">{nextPost.frontmatter.excerpt}</div>
+                <div class="nav-post-meta">
+                  <span>{formatDate(nextPost.frontmatter.date)}</span>
+                  {nextPost.frontmatter.tags && (
+                    <span>{nextPost.frontmatter.tags.length} tags</span>
+                  )}
+                </div>
+              </a>
+            )}
+          </div>
+          
+          <div style="text-align: center; margin-top: 2rem;">
+            <a href="/devlog" class="nav-button">← All Devlog Posts</a>
+          </div>
         </div>
       </nav>
 
@@ -116,5 +168,26 @@ const readingTime = Math.ceil(words / wordsPerMinute);
         </div>
       </footer>
     </main>
+
+    <!-- Section Jump Controls -->
+    <div class="section-jump-controls">
+      <button class="section-jump-btn" id="scrollToTop" title="Scroll to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="18,15 12,9 6,15"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Script -->
+    <script>
+      import('../../scripts/devlogNavigation.ts').then(module => {
+        // Navigation system will auto-initialize
+      });
+      
+      // Scroll to top functionality
+      document.getElementById('scrollToTop')?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    </script>
   </body>
 </html> 

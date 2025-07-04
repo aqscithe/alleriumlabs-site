@@ -1,5 +1,5 @@
 ---
-title: "Game Mechanics & Level Design"
+title: "Testing Testing"
 date: "2025-01-15"
 tags: ["Game Mechanics", "Level Design", "Physics", "Architecture"]
 featured: true
@@ -14,7 +14,7 @@ This month was all about laying the foundation for **Project Codename: The Facil
 ## Key Accomplishments
 
 - **Player Movement System**: Implemented smooth, physics-based movement with proper collision detection
-- **Interaction Framework**: Created a flexible system for environmental interactions
+- **Interaction Framework**: Created a flexible system for environmental interactionsnpm
 - **Level Architecture**: Designed the initial facility layout with interconnected rooms
 - **Lighting Pipeline**: Enhanced the lighting system for better atmosphere
 
@@ -94,7 +94,7 @@ With the new physics system, I encountered some performance bottlenecks:
 
 Getting the movement to feel "just right" took several iterations:
 
-- **Initial**: Floaty, unresponsive movement
+- **Initial**: Floaty, unresponsive movement [^1]
 - **Iteration 1**: Too stiff, felt robotic
 - **Final**: Balanced responsiveness with weight
 
@@ -107,12 +107,19 @@ Looking ahead to February, the focus will be on:
 - **Save System**: Allowing players to save progress
 - **Enemy AI**: First implementation of hostile entities
 
-## Resources & References
 
-- [Game Physics Cookbook](https://example.com) - Great resource for collision detection
-- [Environmental Storytelling in Games](https://example.com) - Influenced the facility design
-- [Component-Based Architecture](https://example.com) - Architecture patterns
+*Thanks for reading! Feel free to reach out with questions or feedback about the development process.* 
+
+> "Stay Frosty"
+> — Corporal Hicks, 2179
 
 ---
 
-*Thanks for reading! Feel free to reach out with questions or feedback about the development process.* 
+
+
+## Resources
+
+- [Environmental Storytelling in Games](https://example.com) - Influenced the facility design
+- [Component-Based Architecture](https://example.com) - Architecture patterns
+
+[^1]: [Game Physics Cookbook](https://example.com) - Great resource for collision detection
