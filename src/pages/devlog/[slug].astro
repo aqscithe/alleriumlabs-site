@@ -1,0 +1,120 @@
+---
+import '../../styles/global.css';
+import '../../styles/devlog.css';
+import '../../styles/devlog-post.css';
+
+// Get all devlog entries for static generation
+export async function getStaticPaths() {
+  const devlogEntries = await Astro.glob('../../devlogs/*.md');
+  
+  return devlogEntries
+    .filter(entry => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
+    .map((entry: any) => {
+      const slug = entry.file.split('/').pop()?.replace('.md', '');
+      return {
+        params: { slug },
+        props: { entry }
+      };
+    });
+}
+
+const { entry } = Astro.props;
+const { Content } = entry;
+
+// Function to format date
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// Calculate reading time
+const content = await entry.compiledContent();
+const wordsPerMinute = 200;
+const words = content.split(/\s+/).length;
+const readingTime = Math.ceil(words / wordsPerMinute);
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{entry.frontmatter.title} - Devlog - Allerium Labs</title>
+    <meta name="description" content={entry.frontmatter.excerpt} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={entry.frontmatter.title} />
+    <meta property="og:description" content={entry.frontmatter.excerpt} />
+    {entry.frontmatter.image && <meta property="og:image" content={entry.frontmatter.image} />}
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content={entry.frontmatter.title} />
+    <meta property="twitter:description" content={entry.frontmatter.excerpt} />
+    {entry.frontmatter.image && <meta property="twitter:image" content={entry.frontmatter.image} />}
+  </head>
+  <body>
+    <main class="devlog-post-main">
+      <!-- Header -->
+      <header class="devlog-post-header">
+        <div class="container">
+          <nav class="post-nav">
+            <a href="/devlog" class="back-link">← Back to Devlog</a>
+            <a href="/" class="home-link">Home</a>
+          </nav>
+          
+          <div class="post-header-content">
+            <div class="post-meta">
+              <time class="post-date">{formatDate(entry.frontmatter.date)}</time>
+              <span class="post-reading-time">{readingTime} min read</span>
+            </div>
+            <h1 class="post-title">{entry.frontmatter.title}</h1>
+            <p class="post-excerpt">{entry.frontmatter.excerpt}</p>
+            
+            <div class="post-tags">
+              {entry.frontmatter.tags && entry.frontmatter.tags.map((tag: string) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Featured Image -->
+      {entry.frontmatter.image && (
+        <section class="featured-image">
+          <div class="container">
+            <img src={entry.frontmatter.image} alt={entry.frontmatter.title} />
+          </div>
+        </section>
+      )}
+
+      <!-- Content -->
+      <article class="devlog-post-content">
+        <div class="container">
+          <div class="prose">
+            <Content />
+          </div>
+        </div>
+      </article>
+
+      <!-- Navigation -->
+      <nav class="post-navigation">
+        <div class="container">
+          <a href="/devlog" class="nav-button">← All Devlog Posts</a>
+        </div>
+      </nav>
+
+      <!-- Footer -->
+      <footer class="devlog-footer">
+        <div class="container">
+          <p>&copy; 2025 Allerium Labs. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html> 

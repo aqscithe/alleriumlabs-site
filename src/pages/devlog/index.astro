@@ -1,0 +1,110 @@
+---
+import '../../styles/global.css';
+import '../../styles/devlog.css';
+
+// Get all devlog entries
+const devlogEntries = await Astro.glob('../../devlogs/*.md');
+
+// Sort by date (newest first) and prepare content
+const sortedEntries = await Promise.all(
+  devlogEntries
+    .filter(entry => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
+    .sort((a, b) => {
+      const dateA = new Date(a.frontmatter.date);
+      const dateB = new Date(b.frontmatter.date);
+      return dateB.getTime() - dateA.getTime();
+    }).map(async (entry) => {
+      const content = await entry.compiledContent();
+      const wordsPerMinute = 200;
+      const words = content.split(/\s+/).length;
+      const readingTime = Math.ceil(words / wordsPerMinute);
+      
+      return {
+        ...entry,
+        readingTime: `${readingTime} min read`
+      };
+    })
+);
+
+// Function to format date
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long',
+    day: 'numeric'
+  });
+}
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Devlog - Allerium Labs</title>
+    <meta name="description" content="Development blog showcasing monthly progress on our game projects." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <main class="devlog-main">
+      <!-- Header Section -->
+      <header class="devlog-header">
+        <div class="container">
+          <div class="header-content">
+            <a href="/" class="back-link">← Back to Home</a>
+            <h1>Development Log</h1>
+            <p>Monthly progress on Project Codename: The Facility</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Devlog Entries Section -->
+      <section class="devlog-entries">
+        <div class="container">
+          <div class="entries-grid">
+            {sortedEntries.map((entry) => (
+              <article class="devlog-entry" data-featured={entry.frontmatter.featured}>
+                <div class="entry-header">
+                  <div class="entry-date">{formatDate(entry.frontmatter.date)}</div>
+                  <h2>{entry.frontmatter.title}</h2>
+                </div>
+                <div class="entry-content">
+                  {entry.frontmatter.image && (
+                    <div class="entry-media">
+                      <img src={entry.frontmatter.image} alt={entry.frontmatter.title} />
+                    </div>
+                  )}
+                  <div class="entry-text">
+                    <p>{entry.frontmatter.excerpt}</p>
+                                                              <div class="entry-meta">
+                       <span class="reading-time">{entry.readingTime}</span>
+                       <a href={`/devlog/${entry.file.split('/').pop()?.replace('.md', '')}`} class="read-more">Read Full Post →</a>
+                     </div>
+                   </div>
+                 </div>
+                                  <div class="entry-tags">
+                   {entry.frontmatter.tags && entry.frontmatter.tags.map((tag: string) => (
+                     <span class="tag">{tag}</span>
+                   ))}
+                 </div>
+              </article>
+            ))}
+            
+            {sortedEntries.length === 0 && (
+              <div class="no-entries">
+                <h3>No devlog entries yet</h3>
+                <p>Check back soon for development updates!</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="devlog-footer">
+        <div class="container">
+          <p>&copy; 2025 Allerium Labs. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html> 

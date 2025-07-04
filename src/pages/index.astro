@@ -1,6 +1,26 @@
 ---
 import '../styles/global.css';
 import logo from '../assets/img/full-logo/Logo_High_White_text.png';
+
+// Get latest devlog entries
+const devlogEntries = await Astro.glob('../devlogs/*.md');
+const latestDevlogs = devlogEntries
+  .filter(entry => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
+  .sort((a, b) => {
+    const dateA = new Date(a.frontmatter.date);
+    const dateB = new Date(b.frontmatter.date);
+    return dateB.getTime() - dateA.getTime();
+  })
+  .slice(0, 3); // Get latest 3 entries
+
+// Function to format date
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long'
+  });
+}
 ---
 
 <!-- <script src="../scripts/landing.js"></script> -->
@@ -72,7 +92,44 @@ import logo from '../assets/img/full-logo/Logo_High_White_text.png';
 			</div>
 		</section>
 
-
+		<!-- Development Blog Section -->
+		<section class="devlog-section" id="devlogSection">
+			<div class="container">
+				<h2>Development Blog</h2>
+				<p>Follow our monthly progress and behind-the-scenes development journey</p>
+				
+				{latestDevlogs.length > 0 ? (
+					<div class="devlog-grid">
+						{latestDevlogs.map((entry) => {
+							const slug = entry.file.split('/').pop()?.replace('.md', '');
+							return (
+								<a href={`/devlog/${slug}`} class="devlog-card">
+									<div class="devlog-card-bg" style={`background-image: url(${entry.frontmatter.image || '/img/webgpu.png'})`}></div>
+									<div class="devlog-card-content">
+										<div class="devlog-card-date">{formatDate(entry.frontmatter.date)}</div>
+										<h3>{entry.frontmatter.title}</h3>
+										<p>{entry.frontmatter.excerpt}</p>
+										<div class="devlog-card-tags">
+											{entry.frontmatter.tags && entry.frontmatter.tags.slice(0, 3).map((tag: string) => (
+												<span class="devlog-tag">{tag}</span>
+											))}
+										</div>
+									</div>
+								</a>
+							);
+						})}
+					</div>
+				) : (
+					<div class="devlog-placeholder">
+						<p>Development blog posts coming soon!</p>
+					</div>
+				)}
+				
+				<div class="devlog-cta">
+					<a href="/devlog" class="devlog-view-all">View All Posts</a>
+				</div>
+			</div>
+		</section>
 
 		<!-- Connect Section -->
 		<section class="connect-section" id="connectSection">

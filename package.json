@@ -6,9 +6,11 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "new-devlog": "node scripts/new-devlog.js"
   },
   "dependencies": {
+    "@astrojs/mdx": "^4.3.0",
     "astro": "^5.7.13",
     "dat.gui": "^0.7.9",
     "wgpu-matrix": "^3.4.0"
