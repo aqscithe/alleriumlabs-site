@@ -5,10 +5,10 @@ import '../../styles/devlog-post.css';
 
 // Get all devlog entries for static generation
 export async function getStaticPaths() {
-  const devlogEntries = await Astro.glob('../../devlogs/*.md');
+  const devlogEntries: any[] = await Astro.glob('../../devlogs/*.md');
   
   return devlogEntries
-    .filter(entry => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
+    .filter((entry: any) => entry.frontmatter && entry.frontmatter.date && entry.frontmatter.title)
     .map((entry: any) => {
       const slug = entry.file.split('/').pop()?.replace('.md', '');
       return {
