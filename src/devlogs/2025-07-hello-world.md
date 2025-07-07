@@ -1,7 +1,7 @@
 ---
-title: "Hello World - Work In Progress"
-date: "2025-07-04"
-tags: ["SRP", "Game Mechanics", "Tools", "Shaders", "Painterly", "Unity DOTS", "Latios Framework"]
+title: "Hello World"
+date: "2025-07-05"
+tags: ["SRP", "Game Mechanics", "Tools", "Shaders", "Painterly", "Unity", "Latios Framework", "Blender"]
 featured: true
 image: "https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/stylized+shader.png"
 excerpt: ""
@@ -375,9 +375,9 @@ Then we'll increase it to 1.5.
 
 ![Time Gen Test Fast](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/time-field-fast.gif)
 
-Finally, we'll test out the accumulation by overlapping the zones of 2 time field generators. I'll set one to 0.1 and the other to 1.5. Where they overlap, time should progress as normal.
+Finally, we'll test out the accumulation by overlapping the zones of 2 time field generators. I'll set one to 0.1 and the other to 1.5. Where they overlap, the values would multiply together to get the final timescale.
 
-![Time Gen Test Overlapping]()
+*NOTE: I did have an example gif of this, but I realized that it is quite difficult to see. I'll have to reupload this.*
 
 Looking good, but I have a confession. A question has been stirring deep within me since I started this whole time escapade and it may have been gnawing at you too. What happens if we make the multiplier negative? I'll set it to something really small: -0.15 should do.
 ![Time Gen Test Negative](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/time-field-neg.gif)
@@ -386,22 +386,52 @@ Quite surprisingly, that worked, but with a little caveat. It seems that once th
 
 #Dev Mode
 
-#Stylized & Painterly
+Having a developer mode where I can toggle debug displays and other information was a big focus for me. And I can proudly say it was accomplished:
 
-##Blender Shader Inspiration
+![Dev Mode Switching GIF](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/devmode.gif)
 
-On my quest, to find a unique look for my game, I spent a couple weeks looking through blender tutorials, watching movies  
+With the completion of this handy ability, I can now toggle debug info for a 3D navigation system I've been trying to make for awhile now.
 
-This is a placeholder[^5][^6]. d
+*Sparse Voxel Octree Debug View:*
+![SVO Debug](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/sparse-voxel-octree.png)
 
-##Bake Tool
+The areas where you see the large clusters just indicate that I have identified that object as an obstacle in the navigation system. The different colors you see are different levels of the octree, each level subdividing into 8. I may go into more depth as to how this works in the future.
+
+*Navigation Obstacles & Their Voxel Representation at the Lowest Level:*
+![Nav Obstacle 1](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/svo-obstacle-1.png)
+
+![Nav Obstacle 2](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/svo-obstacle-2.png)
+
+![Nav Obstacle 3](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/svo-obstacle-3.png)
+
+*It even updates in real time!*
+![Nav Obstacle Moving](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/svo-obstacle-moving.gif)
+
+
+# Stylized & Painterly
+
+On my quest, to find a unique look for my game, I spent a couple weeks looking through blender tutorials, watching movies, etc. and I discovered I have a particular appreciation for game **Sifu**, the League of Legends show **Arcane**, the movie **Flow** and the recent **Predator: Killer of Killers**. Besides all being brilliant pieces of media in their own right - my humble opinion, of course - what they all achieve so outstandingly is the painterly look. 
+
+*Sifu*
+![Sifu Screen](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/sifu-screenshot-arena.jpg)
+*Source: https://news.xbox.com/en-us/2023/03/29/sifu-xbox-arena-mode-future/*
+
+
+*Predator: Killer of Killers*
+![Predator Screen](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/Warlord-Predator.jpg)
+*Source: https://bloody-disgusting.com/interviews/3872147/predator-killer-of-killers-naru/*
+
+Eventually, I stumbled upon someone using an interesting technique in blender[^5][^6], and the shader they used is absolutely free! I spent a couple days attempting to mimic their blender shaders in Unity, and - aside from lighting, which will be its own beast to figure out - I think I got close with this sphere:
+
+![Painterly Look - Sphere Test](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/stylized-shaders-and-light.gif)
+
+## Bake Tool
 
 Attempt at making a baking tool in Unity. Eventually just decided it was easier to use this developer's blender tool and just recreate the final shader in hlsl.
 
 ![Psuedo Painter Bake Tool](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/pseudopainter-tool.png)
-##Matching Shader
 
-##SRP Manager Tool
+## SRP Manager Tool
 
 Eventually, I grew tired of manually switching all of the parameters required when moving between render pipelines, so I made a handy tool to do it with the press of a button.
 
@@ -416,11 +446,11 @@ Eventually, I grew tired of manually switching all of the parameters required wh
 
 
 
-## Resources & References
+# Resources & References
 
 [^1]: [Catlike Coding Custom SRP Tutorial](https://catlikecoding.com/unity/tutorials/custom-srp/) - Excellent resource if you want to have more control over how the render pipeline works
 [^2]: [Catlike Coding Custom SRP Upgrade to Unity 6.1](https://catlikecoding.com/unity/custom-srp/5-0-0/)
 [^3]: [Latios Framework Docs](https://github.com/Dreaming381/Latios-Framework-Documentation)
 [^4]: [Latios Framework Add Ons](https://github.com/Dreaming381/Latios-Framework-Add-Ons)
-[^5]: [Pseudo Painter](https://www.youtube.com/watch?v=J7m2AXP2_pY)
-[^6]: [Pseudo Painter Gumroad](https://barelyart.gumroad.com/l/pseudopainter2)
+[^5]: [Pseudo Painter Video Walkthrough](https://www.youtube.com/watch?v=J7m2AXP2_pY)
+[^6]: [Pseudo Painter Tool Download](https://barelyart.gumroad.com/l/pseudopainter2)
