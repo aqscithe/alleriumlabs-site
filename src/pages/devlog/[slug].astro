@@ -179,12 +179,10 @@ const readingTime = Math.ceil(words / wordsPerMinute);
     </div>
 
     <!-- Navigation Script -->
+    <script type="module" src="/src/scripts/devlogNavigation.ts"></script>
+    
+    <!-- Scroll to top functionality -->
     <script>
-      import('../../scripts/devlogNavigation.ts').then(module => {
-        // Navigation system will auto-initialize
-      });
-      
-      // Scroll to top functionality
       window.addEventListener('DOMContentLoaded', () => {
         console.log('[ScrollToTop] DOMContentLoaded fired');
         const btn = document.getElementById('scrollToTop');

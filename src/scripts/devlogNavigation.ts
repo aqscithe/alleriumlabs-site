@@ -15,10 +15,12 @@ class DevlogNavigation {
     private isScrolling = false;
 
     constructor() {
+        console.log('[DevlogNavigation] Constructor called');
         this.init();
     }
 
     private init(): void {
+        console.log('[DevlogNavigation] init() called');
         this.createProgressBar();
         this.generateTableOfContents();
         this.setupScrollHandlers();
@@ -27,7 +29,7 @@ class DevlogNavigation {
     }
 
     private createProgressBar(): void {
-        // Create reading progress bar
+        console.log('[DevlogNavigation] Creating progress bar');
         this.progressBar = document.createElement('div');
         this.progressBar.className = 'reading-progress';
         this.progressBar.innerHTML = '<div class="reading-progress-fill"></div>';
@@ -35,17 +37,24 @@ class DevlogNavigation {
     }
 
     private generateTableOfContents(): void {
+        console.log('[DevlogNavigation] Generating TOC');
         const prose = document.querySelector('.prose');
-        if (!prose) return;
+        if (!prose) {
+            console.warn('[DevlogNavigation] .prose not found');
+            return;
+        }
 
         const headings = prose.querySelectorAll('h1, h2, h3, h4, h5, h6') as NodeListOf<HTMLElement>;
-        if (headings.length === 0) return;
+        console.log(`[DevlogNavigation] Found ${headings.length} headings`);
+        if (headings.length === 0) {
+            console.warn('[DevlogNavigation] No headings found in .prose');
+            return;
+        }
 
         // Generate IDs and collect TOC items
         headings.forEach((heading, index) => {
             const id = this.generateId(heading.textContent || `heading-${index}`);
             heading.id = id;
-            
             const level = parseInt(heading.tagName.charAt(1));
             this.tocItems.push({
                 id,
@@ -53,6 +62,7 @@ class DevlogNavigation {
                 level,
                 element: heading
             });
+            console.log(`[DevlogNavigation] Heading: ${heading.tagName} - ${heading.textContent} (id: ${id})`);
         });
 
         this.createTocUI();
@@ -68,7 +78,10 @@ class DevlogNavigation {
     }
 
     private createTocUI(): void {
-        if (this.tocItems.length === 0) return;
+        if (this.tocItems.length === 0) {
+            console.warn('[DevlogNavigation] No TOC items to create UI for');
+            return;
+        }
 
         // Create TOC container
         this.tocContainer = document.createElement('nav');
@@ -99,6 +112,9 @@ class DevlogNavigation {
         const header = document.querySelector('.devlog-post-header');
         if (header && header.nextSibling) {
             header.parentNode?.insertBefore(this.tocContainer, header.nextSibling);
+            console.log('[DevlogNavigation] TOC inserted after .devlog-post-header');
+        } else {
+            console.warn('[DevlogNavigation] .devlog-post-header or its nextSibling not found');
         }
 
         // Add click handlers for TOC links
@@ -197,7 +213,7 @@ class DevlogNavigation {
         const headerHeight = 80; // Account for fixed header
         const targetPosition = target.getBoundingClientRect().top + window.scrollY - headerHeight;
 
-        window.scrollTo({
+        document.body.scrollTo({
             top: targetPosition,
             behavior: 'smooth'
         });
@@ -217,7 +233,10 @@ class DevlogNavigation {
 // Auto-initialize for devlog posts
 document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.devlog-post-main')) {
+        console.log('[DevlogNavigation] Initializing on devlog post page');
         new DevlogNavigation();
+    } else {
+        console.log('[DevlogNavigation] Not a devlog post page, skipping init');
     }
 });
 
