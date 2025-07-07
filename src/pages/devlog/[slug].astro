@@ -185,8 +185,18 @@ const readingTime = Math.ceil(words / wordsPerMinute);
       });
       
       // Scroll to top functionality
-      document.getElementById('scrollToTop')?.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.addEventListener('DOMContentLoaded', () => {
+        console.log('[ScrollToTop] DOMContentLoaded fired');
+        const btn = document.getElementById('scrollToTop');
+        console.log('[ScrollToTop] Button found:', btn);
+        if (!btn) {
+          console.error("[ScrollToTop] Button #scrollToTop introuvable");
+          return;
+        }
+        btn.addEventListener('click', () => {
+          console.log('[ScrollToTop] Button clicked!');
+          document.body.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       });
     </script>
   </body>
