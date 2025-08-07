@@ -106,11 +106,9 @@
 }
 
 .content-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: var(--spacing-3xl);
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
+    padding-right: 320px; /* Make room for fixed TOC */
     position: relative;
 }
 
@@ -383,10 +381,12 @@
 
 /* Table of Contents - Redesigned */
 .table-of-contents {
-    position: sticky;
-    top: var(--spacing-xl);
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    width: 280px;
     height: fit-content;
-    max-height: calc(100vh - var(--spacing-3xl));
+    max-height: calc(100vh - 4rem);
     background: rgba(15, 15, 15, 0.95);
     border: 1px solid rgba(110, 93, 168, 0.2);
     border-radius: 16px;
@@ -395,6 +395,17 @@
     overflow: hidden;
     z-index: 20;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Initially hidden */
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+}
+
+.table-of-contents.toc-visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
 }
 
 .toc-header {
@@ -741,7 +752,7 @@
 /* Section Jump Controls */
 .section-jump-controls {
     position: fixed;
-    right: 2rem;
+    left: 2rem;
     bottom: 2rem;
     display: flex;
     flex-direction: column;
@@ -775,25 +786,27 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .content-wrapper {
-        grid-template-columns: 1fr 240px;
-        gap: var(--spacing-lg);
+        padding-right: 280px; /* Smaller padding for smaller screens */
     }
     
     .table-of-contents {
+        width: 240px;
         font-size: var(--font-size-xs);
     }
 }
 
 @media (max-width: 768px) {
     .content-wrapper {
-        grid-template-columns: 1fr;
-        gap: 0;
+        padding-right: 0; /* Remove padding on mobile */
+        max-width: 100%;
+        padding-left: var(--spacing-md);
+        padding-right: var(--spacing-md);
     }
     
     .table-of-contents {
-        display: none;
+        display: none; /* Hide fixed TOC on mobile */
     }
     
     .toc-mobile-trigger {

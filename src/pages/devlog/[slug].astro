@@ -183,7 +183,19 @@ const readingTime = Math.ceil(words / wordsPerMinute);
     
 
     <!-- Navigation Script -->
-    <script type="module" src="/src/scripts/devlogNavigation.ts"></script>
+    <script>
+      import { DevlogNavigation } from '../../scripts/devlogNavigation.ts';
+      
+      // Auto-initialize for devlog posts
+      document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('.devlog-post-main')) {
+          console.log('[DevlogNavigation] Initializing on devlog post page');
+          new DevlogNavigation();
+        } else {
+          console.log('[DevlogNavigation] Not a devlog post page, skipping init');
+        }
+      });
+    </script>
     
     <!-- Scroll to top functionality -->
     <script>

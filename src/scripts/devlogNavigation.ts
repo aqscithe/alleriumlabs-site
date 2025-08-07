@@ -175,11 +175,17 @@ class DevlogNavigation {
             if (!ticking) {
                 requestAnimationFrame(() => {
                     this.updateReadingProgress();
+                    this.updateTocVisibility();
                     ticking = false;
                 });
                 ticking = true;
             }
         });
+        
+        // Check initial visibility on load
+        setTimeout(() => {
+            this.updateTocVisibility();
+        }, 100);
     }
 
     private setupIntersectionObserver(): void {
@@ -230,6 +236,7 @@ class DevlogNavigation {
             if (!ticking) {
                 requestAnimationFrame(() => {
                     this.highlightActiveSection();
+                    this.updateTocVisibility();
                     ticking = false;
                 });
                 ticking = true;
@@ -283,6 +290,33 @@ class DevlogNavigation {
         
         const progress = Math.min(Math.max(scrolled / (articleHeight + windowHeight), 0), 1);
         progressFill.style.width = `${progress * 100}%`;
+    }
+
+    private updateTocVisibility(): void {
+        if (!this.tocContainer || this.isMobile) return;
+
+        const contentSection = document.querySelector('.devlog-post-content') as HTMLElement;
+        if (!contentSection) return;
+
+        // Get the position where the content starts
+        const contentRect = contentSection.getBoundingClientRect();
+        const contentTop = contentRect.top + window.scrollY;
+        const currentScroll = window.scrollY;
+        
+        // Show TOC when we've scrolled past the header to the content
+        // Add some buffer (50px) so it doesn't flicker
+        const showThreshold = contentTop - 50;
+        const shouldShow = currentScroll >= showThreshold;
+
+        const isCurrentlyVisible = this.tocContainer.classList.contains('toc-visible');
+        
+        if (shouldShow && !isCurrentlyVisible) {
+            this.tocContainer.classList.add('toc-visible');
+            console.log('[DevlogNavigation] TOC shown');
+        } else if (!shouldShow && isCurrentlyVisible) {
+            this.tocContainer.classList.remove('toc-visible');
+            console.log('[DevlogNavigation] TOC hidden');
+        }
     }
 
     private highlightActiveSection(): void {
@@ -515,15 +549,5 @@ class DevlogNavigation {
         console.log('[DevlogNavigation] Navigation destroyed');
     }
 }
-
-// Auto-initialize for devlog posts
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.devlog-post-main')) {
-        console.log('[DevlogNavigation] Initializing on devlog post page');
-        new DevlogNavigation();
-    } else {
-        console.log('[DevlogNavigation] Not a devlog post page, skipping init');
-    }
-});
 
 export { DevlogNavigation }; 
