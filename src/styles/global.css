@@ -91,7 +91,6 @@ body, html {
     font-family: var(--font-primary);
     background-color: #0f0f0f; /* Very dark background */
     color: var(--al-text-primary);
-    height: 100%;
     scroll-behavior: smooth;
     overflow-x: hidden;
 }
@@ -140,16 +139,7 @@ body, html {
     pointer-events: none; /* Allow scrolling through canvas */
 }
 
-/* Starbursts Canvas - positioned behind everything */
-#starbursts-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none; /* Allow clicks to pass through */
-}
+
 
 /* Hero Section */
 .hero-section {

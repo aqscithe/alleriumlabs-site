@@ -106,8 +106,11 @@ const readingTime = Math.ceil(words / wordsPerMinute);
       <!-- Content -->
       <article class="devlog-post-content">
         <div class="container">
-          <div class="prose">
-            <Content />
+          <div class="content-wrapper">
+            <div class="prose">
+              <Content />
+            </div>
+            <!-- TOC will be inserted here by JavaScript -->
           </div>
         </div>
       </article>
@@ -177,25 +180,43 @@ const readingTime = Math.ceil(words / wordsPerMinute);
         </svg>
       </button>
     </div>
+    
 
     <!-- Navigation Script -->
     <script type="module" src="/src/scripts/devlogNavigation.ts"></script>
     
     <!-- Scroll to top functionality -->
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        console.log('[ScrollToTop] DOMContentLoaded fired');
+      function initScrollToTop() {
+        console.log('[ScrollToTop] Initializing...');
         const btn = document.getElementById('scrollToTop');
         console.log('[ScrollToTop] Button found:', btn);
+        
         if (!btn) {
-          console.error("[ScrollToTop] Button #scrollToTop introuvable");
+          console.error("[ScrollToTop] Button #scrollToTop not found");
           return;
         }
-        btn.addEventListener('click', () => {
-          console.log('[ScrollToTop] Button clicked!');
-          document.body.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('[ScrollToTop] Scrolling to top');
+          
+          window.scrollTo({ 
+            top: 0, 
+            behavior: 'smooth' 
+          });
         });
-      });
+        
+        console.log('[ScrollToTop] Event listener attached');
+      }
+
+      // Try multiple initialization methods
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initScrollToTop);
+      } else {
+        initScrollToTop();
+      }
     </script>
   </body>
 </html> 

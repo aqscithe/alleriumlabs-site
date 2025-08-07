@@ -2,7 +2,7 @@
 title: "Hello World"
 date: "2025-07-05"
 tags: ["SRP", "Game Mechanics", "Tools", "Shaders", "Painterly", "Unity", "Latios Framework", "Blender"]
-featured: true
+featured: false
 image: "https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-06/stylized+shader.png"
 excerpt: "Alright, so I'm actually cheating a bit on this first entry, as I am including some work from May, as well."
 ---
