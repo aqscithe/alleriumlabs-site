@@ -413,8 +413,8 @@ layer0.NodeSize = svoSettings.leafSize;
 _octreeLayers[0] = layer0;
 ```
 
-> Low Res Rasterization - Column
-NOTE: Only the $\color{Yellow}{yellow}$ objects in the scene are considered obstacles.
+> Low Res Rasterization - Column -
+NOTE: Only the yellow objects in the scene are considered obstacles.
 ![Single Low Res](https://alleriumlabs-devlog-content.s3.us-west-2.amazonaws.com/project-facility/2025-08/low-res-raster-column.png)
 
 > Low Res Rasterization - Full Scene

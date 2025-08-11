@@ -1,0 +1,329 @@
+---
+import '../styles/global.css';
+import '../styles/contact.css';
+
+const pageTitle = "Get in Touch - Allerium Labs";
+const pageDescription = "Reach out to discuss projects, collaborations, or just say hello.";
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content={pageTitle} />
+    <meta property="twitter:description" content={pageDescription} />
+  </head>
+  
+  <body>
+    <main class="contact-main">
+      <!-- Header -->
+      <header class="contact-header">
+        <div class="container">
+          <nav class="contact-nav">
+            <a href="/" class="back-link">← Home</a>
+            <a href="/devlog" class="devlog-link">Devlog</a>
+          </nav>
+          
+          <div class="contact-hero">
+            <h1 class="contact-title">Get in Touch</h1>
+            <p class="contact-subtitle">
+              Have a project in mind? Want to collaborate? Or just want to say hello? 
+              I'd love to hear from you.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Contact Form Section -->
+      <section class="contact-form-section">
+        <div class="container">
+          <div class="contact-wrapper">
+            <!-- Contact Info -->
+            <div class="contact-info">
+              <h2>Let's Connect</h2>
+              <p>
+                Whether you're interested in game development, 3D graphics, 
+                or just want to chat about tech, I'm always open to new conversations.
+              </p>
+              
+              <div class="contact-methods">
+                <div class="contact-method">
+                  <div class="method-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                  </div>
+                  <div class="method-info">
+                    <h3>Email</h3>
+                    <p>alleriumlabs@proton.me</p>
+                  </div>
+                </div>
+                
+                <div class="contact-method">
+                  <div class="method-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 19c-5 0-8-3-8-8s4-8 9-8 8 3 8 8-4 8-8 8z"></path>
+                      <path d="M8.5 17.5l5.5-9.5"></path>
+                    </svg>
+                  </div>
+                  <div class="method-info">
+                    <h3>Response Time</h3>
+                    <p>Usually within 24 hours</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form-container">
+              <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                  <label for="name">Name</label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    required 
+                    placeholder="Your name"
+                  />
+                  <span class="error-message" id="nameError"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    placeholder="your.email@example.com"
+                  />
+                  <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="message">Message</label>
+                  <textarea 
+                    id="message" 
+                    name="message" 
+                    required 
+                    rows="6" 
+                    placeholder="Tell me about your project, idea, or just say hello..."
+                  ></textarea>
+                  <span class="error-message" id="messageError"></span>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                  <span class="btn-text">Send Message</span>
+                  <span class="btn-loading" style="display: none;">
+                    <svg class="loading-spinner" width="20" height="20" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="32" stroke-dashoffset="32">
+                        <animate attributeName="stroke-dashoffset" values="32;0;32" dur="1.5s" repeatCount="indefinite"/>
+                      </circle>
+                    </svg>
+                    Sending...
+                  </span>
+                </button>
+              </form>
+
+              <!-- Success/Error Messages -->
+              <div class="form-message" id="formMessage" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="contact-footer">
+        <div class="container">
+          <p>&copy; 2025 Allerium Labs. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Contact Form Script -->
+    <script>
+      class ContactForm {
+        private form: HTMLFormElement;
+        private submitBtn: HTMLButtonElement;
+        private formMessage: HTMLElement;
+        private apiUrl: string;
+
+        constructor() {
+          this.form = document.getElementById('contactForm') as HTMLFormElement;
+          this.submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+          this.formMessage = document.getElementById('formMessage') as HTMLElement;
+          this.apiUrl = 'https://29fr92m3j2.execute-api.us-west-2.amazonaws.com/contact-alabs';
+          
+          this.init();
+        }
+
+        init() {
+          this.form.addEventListener('submit', (e: Event) => this.handleSubmit(e));
+          
+          // Add real-time validation
+          ['name', 'email', 'message'].forEach(field => {
+            const input = document.getElementById(field) as HTMLInputElement;
+            if (input) {
+              input.addEventListener('blur', () => this.validateField(field));
+              input.addEventListener('input', () => this.clearError(field));
+            }
+          });
+        }
+
+        validateField(fieldName: string) {
+          const field = document.getElementById(fieldName) as HTMLInputElement | HTMLTextAreaElement;
+          const errorElement = document.getElementById(fieldName + 'Error') as HTMLElement;
+          if (!field || !errorElement) return false;
+          
+          const value = field.value.trim();
+
+          let isValid = true;
+          let errorMessage = '';
+
+          switch (fieldName) {
+            case 'name':
+              if (!value) {
+                errorMessage = 'Name is required';
+                isValid = false;
+              } else if (value.length < 2) {
+                errorMessage = 'Name must be at least 2 characters';
+                isValid = false;
+              }
+              break;
+              
+            case 'email':
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!value) {
+                errorMessage = 'Email is required';
+                isValid = false;
+              } else if (!emailRegex.test(value)) {
+                errorMessage = 'Please enter a valid email address';
+                isValid = false;
+              }
+              break;
+              
+            case 'message':
+              if (!value) {
+                errorMessage = 'Message is required';
+                isValid = false;
+              } else if (value.length < 10) {
+                errorMessage = 'Message must be at least 10 characters';
+                isValid = false;
+              }
+              break;
+          }
+
+          if (!isValid) {
+            field.classList.add('error');
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+          } else {
+            field.classList.remove('error');
+            errorElement.style.display = 'none';
+          }
+
+          return isValid;
+        }
+
+        clearError(fieldName: string) {
+          const field = document.getElementById(fieldName) as HTMLElement;
+          const errorElement = document.getElementById(fieldName + 'Error') as HTMLElement;
+          
+          if (field) field.classList.remove('error');
+          if (errorElement) errorElement.style.display = 'none';
+        }
+
+        setLoading(isLoading: boolean) {
+          const btnText = this.submitBtn.querySelector('.btn-text') as HTMLElement;
+          const btnLoading = this.submitBtn.querySelector('.btn-loading') as HTMLElement;
+          
+          if (isLoading) {
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'flex';
+            this.submitBtn.disabled = true;
+          } else {
+            btnText.style.display = 'block';
+            btnLoading.style.display = 'none';
+            this.submitBtn.disabled = false;
+          }
+        }
+
+        showMessage(message: string, type = 'success') {
+          this.formMessage.textContent = message;
+          this.formMessage.className = `form-message ${type}`;
+          this.formMessage.style.display = 'block';
+          
+          // Auto-hide after 5 seconds
+          setTimeout(() => {
+            this.formMessage.style.display = 'none';
+          }, 5000);
+        }
+
+        async handleSubmit(e: Event) {
+          e.preventDefault();
+          
+          // Validate all fields
+          const isNameValid = this.validateField('name');
+          const isEmailValid = this.validateField('email');
+          const isMessageValid = this.validateField('message');
+          
+          if (!isNameValid || !isEmailValid || !isMessageValid) {
+            this.showMessage('Please fix the errors above', 'error');
+            return;
+          }
+
+          // Get form data
+          const formData = new FormData(this.form);
+          const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            message: formData.get('message')
+          };
+
+          this.setLoading(true);
+          
+          try {
+            const response = await fetch(this.apiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              this.showMessage('Thank you! Your message has been sent successfully.', 'success');
+              this.form.reset();
+            } else {
+              throw new Error(result.error || 'Failed to send message');
+            }
+          } catch (error) {
+            console.error('Form submission error:', error);
+            this.showMessage('Sorry, there was an error sending your message. Please try again.', 'error');
+          } finally {
+            this.setLoading(false);
+          }
+        }
+      }
+
+      // Initialize contact form when DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        new ContactForm();
+      });
+    </script>
+  </body>
+</html>

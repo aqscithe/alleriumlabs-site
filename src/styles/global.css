@@ -841,3 +841,29 @@ body, html {
     }
 }
 
+/* TEMPORARY: Disable "Get in Touch" links for AWS SES verification */
+/* Target only the specific contact links to avoid impacting other CTAs */
+a.cta-button[href="/contact"],
+a.footer-contact-link[href="/contact"] {
+    pointer-events: none !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+    position: relative;
+}
+
+a.cta-button[href="/contact"]::after,
+a.footer-contact-link[href="/contact"]::after {
+    content: 'TEMP DISABLED';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #e74c3c;
+    color: #ffffff;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    z-index: 2;
+}
+
