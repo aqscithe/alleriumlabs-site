@@ -839,6 +839,17 @@ body, html {
     .container {
         padding: 0 var(--spacing-md);
     }
+    
+    /* Mobile logo styling enhancements */
+    #fallback-logo img {
+        max-width: 150px !important;
+        max-height: 150px !important;
+        margin: 0 auto;
+    }
+    
+    .hero-content {
+        padding: var(--spacing-lg);
+    }
 }
 
 /* TEMPORARY: Disable "Get in Touch" links for AWS SES verification */

@@ -79,13 +79,31 @@ function createFallbackLogo() {
     text-align: center;
   `;
   
+  // Function to get appropriate logo based on screen size
+  function getLogoSrc() {
+    const isMobile = window.innerWidth <= 768;
+    return isMobile ? '/img/half-logo/Logo.png' : '/img/Logo_High_White_text.png';
+  }
+  
+  // Function to get appropriate sizing based on screen size
+  function getLogoSizing() {
+    const isMobile = window.innerWidth <= 768;
+    return {
+      maxWidth: isMobile ? '150px' : '400px',
+      maxHeight: isMobile ? '150px' : '300px'
+    };
+  }
+  
+  const logoSrc = getLogoSrc();
+  
   // Create logo image
   const logoImg = document.createElement('img');
-  logoImg.src = '/img/Logo_High_White_text.png';
+  const logoSizing = getLogoSizing();
+  logoImg.src = logoSrc;
   logoImg.alt = 'Allerium Labs Logo';
   logoImg.style.cssText = `
-    max-width: 400px;
-    max-height: 300px;
+    max-width: ${logoSizing.maxWidth};
+    max-height: ${logoSizing.maxHeight};
     width: auto;
     height: auto;
     filter: drop-shadow(0 0 20px rgba(70, 179, 230, 0.6));
@@ -119,6 +137,21 @@ function createFallbackLogo() {
   document.head.appendChild(style);
   fallbackContainer.appendChild(logoImg);
   heroContent.appendChild(fallbackContainer);
+  
+  // Add resize event listener to handle logo changes on screen size change
+  function handleResize() {
+    const newLogoSrc = getLogoSrc();
+    const newLogoSizing = getLogoSizing();
+    
+    // Check if src needs to be updated (compare the path part only)
+    if (!logoImg.src.endsWith(newLogoSrc)) {
+      logoImg.src = newLogoSrc;
+      logoImg.style.maxWidth = newLogoSizing.maxWidth;
+      logoImg.style.maxHeight = newLogoSizing.maxHeight;
+    }
+  }
+  
+  window.addEventListener('resize', handleResize);
 }
 
 // Simple WebGPU availability check
