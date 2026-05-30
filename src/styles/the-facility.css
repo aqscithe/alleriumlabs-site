@@ -311,6 +311,9 @@
     border-radius: 50%;
     color: var(--al-white);
     background: linear-gradient(135deg, var(--al-accent) 0%, var(--al-accent-alt) 100%);
+    /* Run the gradient over the border box so the 1px translucent border doesn't
+       clamp to the gradient's end colors and create an abrupt ring at the edge. */
+    background-origin: border-box;
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(6px);
