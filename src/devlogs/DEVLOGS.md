@@ -1,6 +1,6 @@
 # Devlog System
 
-This directory contains markdown files for your monthly devlog entries. Each markdown file represents a devlog post that will be automatically displayed on your devlog page.
+This directory contains markdown files for devlog entries. Each markdown file represents a devlog post that will be automatically displayed on the devlog page.
 
 ## How to Add a New Devlog Entry
 
