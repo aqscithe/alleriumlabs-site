@@ -1,0 +1,326 @@
+---
+import '../../styles/global.css';
+import '../../styles/the-facility.css';
+
+// ---------------------------------------------------------------------------
+// Content manifest
+//
+// General showcase media (gifs / images / video) lives in the dedicated bucket:
+//   https://alleriumlabs-general-content.s3.us-west-2.amazonaws.com/{image|gif|video}/
+// This is SEPARATE from the devlog content bucket (alleriumlabs-devlog-content).
+//
+// To add real media, drop the file in the matching bucket directory and add an
+// entry below. Filenames marked TODO are placeholders — until a real file is
+// present the tile degrades gracefully to a labelled "coming soon" panel
+// (see the onerror handlers + .media-fallback styling), so nothing renders as a
+// broken image.
+//
+// NOTE: We only showcase shipped/completed work here — no roadmap or "coming
+// next" promises.
+// ---------------------------------------------------------------------------
+const CONTENT_BASE = 'https://alleriumlabs-general-content.s3.us-west-2.amazonaws.com';
+type MediaKind = 'image' | 'gif' | 'video';
+const mediaUrl = (kind: MediaKind, file: string) => `${CONTENT_BASE}/${kind}/${file}`;
+
+interface MediaRef {
+  kind: MediaKind;
+  file: string; // TODO: replace placeholders with real filenames from the bucket
+  caption: string;
+  wide?: boolean;
+}
+
+// Hero showpiece — a short looping clip is ideal; falls back to a still.
+const heroMedia: MediaRef = {
+  kind: 'video',
+  file: 'test-space-video.mp4', // TODO: test content
+  caption: 'Project Codename: The Facility — in-engine.',
+};
+const heroPoster = mediaUrl('image', 'test-space-img-1.jpg'); // TODO: test content
+
+// Completed features. Each entry can link to the devlog where it was detailed.
+// Copy here describes work that is DONE, not planned.
+interface Feature {
+  title: string;
+  body: string;
+  media: MediaRef;
+  devlogSlug?: string;
+}
+const features: Feature[] = [
+  {
+    title: 'A Custom Painterly Render Pipeline',
+    body:
+      "The Facility runs on a bespoke Scriptable Render Pipeline built on Unity DOTS, " +
+      "giving us full control over how lights, shadows and post-processing reach the " +
+      "screen. The result is a hand-shaded, painterly look that is ours alone — driven " +
+      "entirely by code rather than off-the-shelf URP/HDRP presets.",
+    media: { kind: 'image', file: 'test-space-img-1.jpg', caption: 'Stylized painterly shading.' }, // TODO: test content
+    devlogSlug: '2025-07-hello-world',
+  },
+  {
+    title: '3D Navigation with Sparse Voxel Octrees',
+    body:
+      "Because some of the AI can fly, flat navmeshes were never going to cut it. We " +
+      "built true volumetric pathfinding on a Sparse Voxel Octree that plays nicely with " +
+      "the Latios Framework's QVVS transforms and Unity's job system — so agents move " +
+      "through the space in full 3D, performantly.",
+    media: { kind: 'gif', file: 'test-space-gif.gif', caption: 'Agents pathing in full 3D.' }, // TODO: test content
+    devlogSlug: '2025-08-3d-navigation',
+  },
+];
+
+// Free-form gallery of stills / gifs / clips.
+const gallery: MediaRef[] = [
+  { kind: 'image', file: 'test-space-img-1.jpg', caption: 'In-engine still.', wide: true }, // TODO: test content
+  { kind: 'gif', file: 'test-space-gif.gif', caption: 'Gameplay moment.' }, // TODO: test content
+  { kind: 'image', file: 'test-space-img-2.jpg', caption: 'Environment study.' }, // TODO: test content
+  { kind: 'image', file: 'test-space-img-1.jpg', caption: 'Lighting test.' }, // TODO: test content
+  { kind: 'video', file: 'test-space-video.mp4', caption: 'Systems in motion.' }, // TODO: test content
+  { kind: 'image', file: 'test-space-img-2.jpg', caption: 'Concept frame.' }, // TODO: test content
+];
+
+// Related devlogs, newest first.
+const devlogEntries = await Astro.glob('../../devlogs/*.md');
+const relatedDevlogs = devlogEntries
+  .filter((e) => e.frontmatter && e.frontmatter.date && e.frontmatter.title)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
+  );
+const slugOf = (file: string) => file.split('/').pop()?.replace('.md', '');
+const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+const pageTitle = 'The Facility - Allerium Labs';
+const pageDescription =
+  'A look at Project Codename: The Facility — a survival horror / immersive sim in development at Allerium Labs. Completed features, in-engine media, and development logs.';
+---
+
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={heroPoster} />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content={pageTitle} />
+    <meta property="twitter:description" content={pageDescription} />
+  </head>
+
+  <body>
+    <main class="facility-main">
+      <div class="container">
+        <nav class="facility-nav">
+          <a href="/" class="back-link">← Home</a>
+          <div class="nav-links">
+            <a href="/devlog">Devlog</a>
+            <a href="/contact">Contact</a>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Hero -->
+      <section class="facility-hero">
+        <div class="container">
+          <div class="facility-hero-copy">
+            <p class="eyebrow">Current Project</p>
+            <h1>The Facility</h1>
+            <p class="lede">
+              A survival horror / immersive sim built on custom technology — a
+              hand-shaded render pipeline, volumetric AI navigation, and systems
+              designed to unsettle.
+            </p>
+            <div class="facility-chips">
+              <span class="facility-chip status">In Development</span>
+              <span class="facility-chip">Survival Horror</span>
+              <span class="facility-chip">Immersive Sim</span>
+              <span class="facility-chip">Unity · DOTS</span>
+            </div>
+          </div>
+
+          <figure class="facility-hero-media">
+            <span class="media-badge">Video</span>
+            <video
+              autoplay
+              muted
+              loop
+              playsinline
+              poster={heroPoster}
+              onerror="this.closest('.facility-hero-media')?.classList.add('media-missing'); this.remove();"
+            >
+              <source src={mediaUrl(heroMedia.kind, heroMedia.file)} type="video/mp4" />
+            </video>
+            <div class="media-fallback">In-engine showcase video coming soon</div>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Completed Features -->
+      <section class="facility-section tone-a">
+        <div class="container">
+          <div class="section-head">
+            <h2>What We've Built</h2>
+            <p>
+              The technology and systems already running in The Facility. Each one
+              is documented in depth in the devlog.
+            </p>
+          </div>
+
+          <div class="feature-list">
+            {features.map((feature) => (
+              <article class="feature-row">
+                <figure class="feature-media">
+                  <span class="media-badge">{feature.media.kind === 'gif' ? 'GIF' : feature.media.kind === 'video' ? 'Video' : 'Image'}</span>
+                  {feature.media.kind === 'video' ? (
+                    <video
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                      onerror="this.closest('.feature-media')?.classList.add('media-missing'); this.remove();"
+                    >
+                      <source src={mediaUrl(feature.media.kind, feature.media.file)} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={mediaUrl(feature.media.kind, feature.media.file)}
+                      alt={feature.media.caption}
+                      loading="lazy"
+                      onerror="this.closest('.feature-media')?.classList.add('media-missing'); this.remove();"
+                    />
+                  )}
+                  <div class="media-fallback">{feature.media.caption} — media coming soon</div>
+                </figure>
+                <div class="feature-copy">
+                  <h3>{feature.title}</h3>
+                  <p>{feature.body}</p>
+                  {feature.devlogSlug && (
+                    <a class="feature-devlog-link" href={`/devlog/${feature.devlogSlug}`}>
+                      Read the devlog →
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- Media Gallery -->
+      <section class="facility-section tone-b">
+        <div class="container">
+          <div class="section-head">
+            <h2>In-Engine</h2>
+            <p>Stills and clips captured straight from the project as it comes together.</p>
+          </div>
+
+          <div class="gallery-grid">
+            {gallery.map((item) => (
+              <figure class={`gallery-item${item.wide ? ' wide' : ''}`}>
+                <span class="media-badge">{item.kind === 'gif' ? 'GIF' : item.kind === 'video' ? 'Video' : 'Image'}</span>
+                {item.kind === 'video' ? (
+                  <video
+                    muted
+                    loop
+                    playsinline
+                    preload="metadata"
+                    onerror="this.closest('.gallery-item')?.classList.add('media-missing'); this.remove();"
+                  >
+                    <source src={mediaUrl(item.kind, item.file)} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img
+                    src={mediaUrl(item.kind, item.file)}
+                    alt={item.caption}
+                    loading="lazy"
+                    onerror="this.closest('.gallery-item')?.classList.add('media-missing'); this.remove();"
+                  />
+                )}
+                <figcaption>{item.caption}</figcaption>
+                <div class="media-fallback">{item.caption} — coming soon</div>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- Related Devlogs -->
+      <section class="facility-section tone-c">
+        <div class="container">
+          <div class="section-head">
+            <h2>From the Devlog</h2>
+            <p>The deep dives behind the work above.</p>
+          </div>
+
+          <div class="related-devlogs">
+            {relatedDevlogs.map((entry) => (
+              <a class="related-card" href={`/devlog/${slugOf(entry.file)}`}>
+                <span class="related-date">{formatDate(entry.frontmatter.date)}</span>
+                <h3>{entry.frontmatter.title}</h3>
+                <p>{entry.frontmatter.excerpt}</p>
+              </a>
+            ))}
+          </div>
+
+          <div class="facility-cta">
+            <a href="/devlog" class="devlog-view-all">View All Devlogs</a>
+          </div>
+        </div>
+      </section>
+
+      <footer class="facility-footer">
+        <div class="container">
+          <p>&copy; 2025 Allerium Labs. All rights reserved.</p>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Lightbox: click any gallery item to expand -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Media viewer">
+      <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+      <div class="lightbox-content" id="lightboxContent"></div>
+    </div>
+
+    <script>
+      const lightbox = document.getElementById('lightbox');
+      const content = document.getElementById('lightboxContent');
+      const closeBtn = document.getElementById('lightboxClose');
+
+      function close() {
+        if (!lightbox || !content) return;
+        lightbox.classList.remove('open');
+        content.innerHTML = '';
+      }
+
+      document.querySelectorAll('.gallery-item').forEach((item) => {
+        item.addEventListener('click', () => {
+          // Skip items whose media failed to load.
+          if (item.classList.contains('media-missing') || !lightbox || !content) return;
+          const media = item.querySelector('img, video');
+          if (!media) return;
+          content.innerHTML = '';
+          const clone = media.cloneNode(true) as HTMLElement;
+          if (clone instanceof HTMLVideoElement) {
+            clone.setAttribute('controls', '');
+            clone.removeAttribute('muted');
+          }
+          content.appendChild(clone);
+          lightbox.classList.add('open');
+        });
+      });
+
+      closeBtn?.addEventListener('click', close);
+      lightbox?.addEventListener('click', (e) => {
+        if (e.target === lightbox) close();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+      });
+    </script>
+  </body>
+</html>

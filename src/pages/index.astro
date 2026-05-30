@@ -16,11 +16,20 @@ const latestDevlogs = devlogEntries
 // Function to format date
 function formatDate(dateString: string) {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
     month: 'long'
   });
 }
+
+// A few interesting stills for the Current Project teaser. Full showcase lives
+// on /the-facility. Media is served from the general content bucket; missing
+// files degrade gracefully to a labelled placeholder (see onerror handlers).
+// TODO: swap placeholder filenames for real ones from the bucket.
+const CONTENT_BASE = 'https://alleriumlabs-general-content.s3.us-west-2.amazonaws.com';
+const teaserShots = [
+  { file: 'test-space-img-1.jpg', alt: 'The Facility — in-engine still' },
+];
 ---
 
 <html lang="en" data-theme="dark">
@@ -39,51 +48,31 @@ function formatDate(dateString: string) {
 			</div>
 		</section>
 
-		<!-- Current Project Section -->
+		<!-- Current Project Teaser -->
 		<section class="project-section current-project" id="currentProject">
 			<div class="container">
-				<h2>Current Project</h2>
-				<div class="project-showcase">
-					<div class="project-media">
-						<div class="media-placeholder">
-							<p>Game Screenshots / GIFs Coming Soon</p>
-						</div>
-					</div>
-					<div class="project-info">
-						<h3>Project Codename: The Facility</h3>
-						<p>An innovative gaming experience that pushes the boundaries of interactive storytelling. Combining cutting-edge technology with immersive gameplay mechanics.</p>
-						<div class="project-details">
-							<span class="status">In Development</span>
-							<span class="genre">Genre: Survival Horror / Immersive Sim</span>
-						</div>
-					</div>
+				<div class="teaser-head">
+					<p class="teaser-eyebrow">Current Project</p>
+					<h2>The Facility</h2>
+					<p class="teaser-subtitle">A survival horror / immersive sim built on custom technology. See what we've built — in-engine media, completed features, and the devlogs behind them.</p>
 				</div>
-				
-				<!-- In-Game Screenshots Section -->
-				<div class="screenshots-section">
-					<h3>In-Game Screenshots</h3>
-					<div class="screenshots-grid">
-						<div class="screenshot-card">
-							<div class="screenshot-placeholder">
-								<p>Screenshot 1</p>
-							</div>
-						</div>
-						<div class="screenshot-card">
-							<div class="screenshot-placeholder">
-								<p>Screenshot 2</p>
-							</div>
-						</div>
-						<div class="screenshot-card">
-							<div class="screenshot-placeholder">
-								<p>Screenshot 3</p>
-							</div>
-						</div>
-						<div class="screenshot-card">
-							<div class="screenshot-placeholder">
-								<p>Screenshot 4</p>
-							</div>
-						</div>
-					</div>
+
+				<div class="teaser-gallery">
+					{teaserShots.map((shot) => (
+						<figure class="teaser-shot">
+							<img
+								src={`${CONTENT_BASE}/image/${shot.file}`}
+								alt={shot.alt}
+								loading="lazy"
+								onerror="this.closest('.teaser-shot')?.classList.add('shot-missing'); this.remove();"
+							/>
+							<div class="shot-fallback">In-engine media coming soon</div>
+						</figure>
+					))}
+				</div>
+
+				<div class="teaser-cta">
+					<a href="/games/the-facility" class="devlog-view-all">Explore The Facility →</a>
 				</div>
 			</div>
 		</section>
@@ -222,10 +211,147 @@ function formatDate(dateString: string) {
 			</div>
 		</footer>
     </main>
-    
+
+    <!-- Fixed section-info widget: appears after the hero, reflects the section in view -->
+    <aside class="info-widget" id="infoWidget">
+      <button class="info-button" id="infoButton" type="button" aria-label="More info about this section" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+          <circle cx="12" cy="7.5" r="1.4" fill="currentColor" />
+          <line x1="12" y1="11" x2="12" y2="16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div class="info-panel" id="infoPanel" role="region" aria-label="Section information">
+        <span class="info-panel-eyebrow">About this section</span>
+        <h4 class="info-panel-title" id="infoPanelTitle"></h4>
+        <dl class="info-panel-list" id="infoPanelList"></dl>
+        <a class="info-panel-link" id="infoPanelLink"></a>
+      </div>
+    </aside>
+
     <!-- Scripts -->
     <!-- <script src="../scripts/landing.js"></script> -->
     <!-- <script src="../scripts/helloTriangle.ts"></script> -->
     <script src="../scripts/particleLogo.ts"></script>
+
+    <script>
+      // Section-info widget: a fixed, center-left button that reveals contextual
+      // info about whichever section is currently in view. Hidden over the hero.
+      interface SectionInfo {
+        title: string;
+        items: [string, string][];
+        link?: { href: string; label: string };
+      }
+
+      const INFO: Record<string, SectionInfo> = {
+        currentProject: {
+          title: 'The Facility',
+          items: [
+            ['Status', 'In Development'],
+            ['Genre', 'Immersive Sim'],
+            ['Engine', 'Unity · DOTS'],
+          ],
+          link: { href: '/games/the-facility', label: 'Explore the showcase →' },
+        },
+        devlogSection: {
+          title: 'Development Blog',
+          items: [
+            ['Cadence', 'Monthly'],
+            ['Focus', 'Graphics · AI · Systems'],
+          ],
+          link: { href: '/devlog', label: 'View all devlogs →' },
+        },
+        connectSection: {
+          title: 'Connect & Collaborate',
+          items: [
+            ['Community', 'Discord'],
+            ['Updates', 'YouTube · Bluesky'],
+          ],
+          link: { href: '/contact', label: 'Get in touch →' },
+        },
+      };
+
+      const widget = document.getElementById('infoWidget');
+      const button = document.getElementById('infoButton');
+      const titleEl = document.getElementById('infoPanelTitle');
+      const listEl = document.getElementById('infoPanelList');
+      const linkEl = document.getElementById('infoPanelLink') as HTMLAnchorElement | null;
+
+      function render(key: string): void {
+        const data = INFO[key];
+        if (!data || !titleEl || !listEl || !linkEl) return;
+        titleEl.textContent = data.title;
+        listEl.innerHTML = data.items
+          .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`)
+          .join('');
+        if (data.link) {
+          linkEl.href = data.link.href;
+          linkEl.textContent = data.link.label;
+        } else {
+          linkEl.removeAttribute('href');
+          linkEl.textContent = '';
+        }
+      }
+
+      // Track which content section is in view and update the panel.
+      const sections = Object.keys(INFO)
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null);
+
+      const sectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
+              render(entry.target.id);
+            }
+          });
+        },
+        { threshold: [0.4] }
+      );
+      sections.forEach((s) => sectionObserver.observe(s));
+
+      // Only reveal the widget once the hero/header has scrolled out of view.
+      const hero = document.getElementById('heroSection');
+      if (hero && widget) {
+        const heroObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const pastHero = !entry.isIntersecting;
+              widget.classList.toggle('visible', pastHero);
+              if (!pastHero) {
+                widget.classList.remove('open');
+                button?.setAttribute('aria-expanded', 'false');
+              }
+            });
+          },
+          { threshold: 0.15 }
+        );
+        heroObserver.observe(hero);
+      }
+
+      // Click: spin the button and toggle the panel.
+      button?.addEventListener('click', () => {
+        if (!widget) return;
+        const open = widget.classList.toggle('open');
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        button.classList.add('spin');
+        window.setTimeout(() => button.classList.remove('spin'), 600);
+      });
+
+      // Click outside closes the panel.
+      document.addEventListener('click', (e) => {
+        if (
+          widget &&
+          widget.classList.contains('open') &&
+          !widget.contains(e.target as Node)
+        ) {
+          widget.classList.remove('open');
+          button?.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Seed initial content.
+      render('currentProject');
+    </script>
   </body>
 </html>

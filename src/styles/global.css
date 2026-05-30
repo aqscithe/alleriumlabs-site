@@ -182,6 +182,225 @@ body, html {
     background: linear-gradient(180deg, #1a1a1a 0%, #1e1e1e 100%);
 }
 
+/* Current Project Teaser (home) - concise pointer to the showcase.
+   Mirrors the centered, stacked rhythm of the devlog section:
+   eyebrow + title + subtitle on top, media in the middle, CTA at the bottom. */
+.teaser-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto var(--spacing-2xl);
+}
+
+.teaser-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: var(--font-size-sm);
+    color: var(--al-accent-alt);
+    margin: 0 0 var(--spacing-md);
+}
+
+.teaser-head h2 {
+    font-size: var(--font-size-6xl);
+    line-height: 1.05;
+    margin: 0 0 var(--spacing-lg);
+    color: var(--al-text-primary);
+}
+
+.teaser-subtitle {
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+    color: var(--al-text-secondary);
+    margin: 0 auto;
+    max-width: 56ch;
+}
+
+.teaser-gallery {
+    max-width: 820px;
+    margin: 0 auto;
+}
+
+.teaser-cta {
+    text-align: center;
+    margin-top: var(--spacing-2xl);
+}
+
+.teaser-shot {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(110, 93, 168, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.teaser-shot:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(110, 93, 168, 0.3);
+    border-color: var(--al-accent);
+}
+
+.teaser-shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.shot-fallback {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: var(--spacing-md);
+    text-align: center;
+    color: var(--al-text-secondary);
+    font-size: var(--font-size-sm);
+    background:
+        repeating-linear-gradient(45deg, rgba(110, 93, 168, 0.06) 0 12px, transparent 12px 24px),
+        rgba(0, 0, 0, 0.3);
+}
+
+.teaser-shot.shot-missing .shot-fallback {
+    display: flex;
+}
+
+/* Fixed Section-Info Widget (home) - contextual info for the section in view */
+.info-widget {
+    position: fixed;
+    left: var(--spacing-lg);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.info-widget.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.info-button {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(110, 93, 168, 0.5);
+    background: rgba(42, 42, 58, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--al-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease,
+        background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-button:hover {
+    color: var(--al-white);
+    border-color: var(--al-accent);
+    background: rgba(110, 93, 168, 0.35);
+    box-shadow: 0 0 0 4px rgba(110, 93, 168, 0.15),
+        0 0 24px rgba(110, 93, 168, 0.55);
+}
+
+/* Spin on each open/close toggle */
+.info-button.spin {
+    animation: info-spin 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes info-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.info-panel {
+    width: 280px;
+    padding: var(--spacing-lg);
+    border-radius: 14px;
+    background: rgba(26, 26, 26, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(110, 93, 168, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transform: translateX(-12px) scale(0.96);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.3s ease,
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-widget.open .info-panel {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+}
+
+.info-panel-eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: var(--font-size-xs);
+    color: var(--al-accent-alt);
+    margin-bottom: var(--spacing-xs);
+}
+
+.info-panel-title {
+    margin: 0 0 var(--spacing-md);
+    font-size: var(--font-size-xl);
+    color: var(--al-text-primary);
+}
+
+.info-panel-list {
+    margin: 0 0 var(--spacing-md);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-xs) var(--spacing-md);
+}
+
+.info-panel-list dt {
+    color: var(--al-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.info-panel-list dd {
+    margin: 0;
+    text-align: right;
+    color: var(--al-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-medium);
+}
+
+.info-panel-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--al-accent-alt);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-medium);
+    transition: gap 0.25s ease, color 0.25s ease;
+}
+
+.info-panel-link:hover {
+    gap: var(--spacing-sm);
+    color: var(--al-accent);
+}
+
+.info-panel-link:empty {
+    display: none;
+}
+
 /* Past Projects - more transition toward brand colors */
 .past-projects {
     background: linear-gradient(180deg, #1e1e1e 0%, #222232 100%);
@@ -802,7 +1021,16 @@ body, html {
         grid-template-columns: 1fr;
         gap: var(--spacing-xl);
     }
-    
+
+    .teaser-head h2 {
+        font-size: var(--font-size-5xl);
+    }
+
+    /* The fixed left widget would crowd the centered mobile layout */
+    .info-widget {
+        display: none;
+    }
+
     .screenshots-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
