@@ -19,6 +19,13 @@
     margin: 0 auto;
 }
 
+.header-nav {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
 .back-link {
     display: inline-block;
     color: var(--al-accent);
@@ -26,6 +33,11 @@
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-lg);
     transition: color 0.3s ease;
+}
+
+/* Inside the header nav the row handles spacing, so drop the per-link margin */
+.header-nav .back-link {
+    margin-bottom: 0;
 }
 
 .back-link:hover {

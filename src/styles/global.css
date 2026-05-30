@@ -199,7 +199,9 @@ body, html {
     margin: 0 0 var(--spacing-md);
 }
 
-.teaser-head h2 {
+/* Scoped under .current-project so it beats the later, equal-specificity
+   `.project-section h2` rule (which would otherwise force a 4rem margin). */
+.current-project .teaser-head h2 {
     font-size: var(--font-size-6xl);
     line-height: 1.05;
     margin: 0 0 var(--spacing-lg);
@@ -288,6 +290,7 @@ body, html {
 }
 
 .info-button {
+    position: relative;
     width: 52px;
     height: 52px;
     flex-shrink: 0;
@@ -303,6 +306,32 @@ body, html {
     cursor: pointer;
     transition: color 0.3s ease, border-color 0.3s ease,
         background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Slow white attention pulse (expanding ring) on a pseudo-element so it never
+   collides with the click-spin animation on the button itself. */
+.info-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+}
+
+/* Pulse only while idle: widget shown, panel closed, and not hovered. */
+.info-widget.visible:not(.open) .info-button:not(:hover)::after {
+    animation: info-pulse 3.2s ease-out infinite;
+}
+
+@keyframes info-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
+    70% { box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .info-button::after { animation: none; }
 }
 
 .info-button:hover {
@@ -991,9 +1020,20 @@ body, html {
     text-align: center;
 }
 
+/* Drives the idle "light travels the border" sweep (see .devlog-view-all::before) */
+@property --beam-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 288deg;
+}
+
 .devlog-view-all {
+    position: relative;
     display: inline-block;
     background: linear-gradient(135deg, var(--al-accent) 0%, var(--al-accent-alt) 100%);
+    /* Run the gradient over the border box so the 1px transparent border doesn't
+       clamp to the gradient's end colors and create a faint 4-sided frame. */
+    background-origin: border-box;
     color: var(--al-white);
     padding: var(--spacing-md) var(--spacing-xl);
     border-radius: 8px;
@@ -1003,11 +1043,58 @@ body, html {
     border: 1px solid transparent;
 }
 
+/* A white light that traces the border roughly once every 10s while idle.
+   A conic gradient (a bright "comet" head with a fading tail) is masked down to
+   a thin ring; rotating --beam-angle sweeps the light around the perimeter. */
+.devlog-view-all::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+        from var(--beam-angle),
+        transparent 0deg,
+        rgba(255, 255, 255, 0) 300deg,
+        rgba(255, 255, 255, 0.95) 352deg,
+        transparent 360deg
+    );
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    animation: beam-travel 10s ease-in-out infinite;
+}
+
+/* Start the comet head at the top-left corner (~288deg) and sweep one full lap. */
+@keyframes beam-travel {
+    0% { --beam-angle: 288deg; opacity: 0; }
+    4% { opacity: 1; }
+    26% { --beam-angle: 648deg; opacity: 1; }
+    32%, 100% { --beam-angle: 648deg; opacity: 0; }
+}
+
 .devlog-view-all:hover {
     background: rgba(110, 93, 168, 0.2);
     border-color: var(--al-accent);
     color: var(--al-accent);
     transform: translateY(-2px);
+}
+
+/* Idle only — stop the sweep once the button is engaged. */
+.devlog-view-all:hover::before {
+    animation: none;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .devlog-view-all::before {
+        animation: none;
+        opacity: 0;
+    }
 }
 
 /* Ensure dat.gui appears above everything */
@@ -1022,7 +1109,7 @@ body, html {
         gap: var(--spacing-xl);
     }
 
-    .teaser-head h2 {
+    .current-project .teaser-head h2 {
         font-size: var(--font-size-5xl);
     }
 

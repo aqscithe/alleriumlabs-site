@@ -68,29 +68,6 @@
     max-width: 46ch;
 }
 
-.facility-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
-
-.facility-chip {
-    background: var(--al-bg-medium);
-    border: 1px solid rgba(110, 93, 168, 0.4);
-    color: var(--al-text-primary);
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: 999px;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-medium);
-    letter-spacing: 0.02em;
-}
-
-.facility-chip.status {
-    background: linear-gradient(135deg, var(--al-accent) 0%, var(--al-accent-alt) 100%);
-    border-color: transparent;
-    color: var(--al-white);
-}
-
 /* Hero media frame (video or image) */
 .facility-hero-media {
     position: relative;
@@ -108,6 +85,40 @@
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* ---------- Intro (brief "what is The Facility") ---------- */
+.facility-intro {
+    padding: var(--spacing-2xl) 0 var(--spacing-4xl);
+    background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+    text-align: center;
+}
+
+.facility-intro .container {
+    max-width: 760px;
+}
+
+.facility-intro .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: var(--font-size-sm);
+    color: var(--al-accent-alt);
+    margin: 0 0 var(--spacing-md);
+}
+
+.facility-intro h1 {
+    font-size: var(--font-size-7xl);
+    line-height: 1.05;
+    margin: 0 0 var(--spacing-lg);
+    color: var(--al-text-primary);
+}
+
+.facility-intro .lede {
+    font-size: var(--font-size-xl);
+    line-height: 1.65;
+    color: var(--al-text-secondary);
+    margin: 0 auto var(--spacing-xl);
+    max-width: 56ch;
 }
 
 /* ---------- Section scaffolding ---------- */
@@ -209,16 +220,39 @@
     color: var(--al-accent);
 }
 
-/* ---------- Media Gallery ---------- */
-.gallery-grid {
+/* ---------- Media Puzzle ---------- */
+/* Aspect-ratio-driven mosaic. The inline script on the page measures each
+   piece's natural aspect ratio and assigns its column + row span, then the
+   grid packs them with grid-auto-flow: dense. Media is shown at its true
+   aspect ratio (no cropping) so each piece reads the way it normally would. */
+.puzzle-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 8px;
+    grid-auto-flow: row dense;
+    gap: var(--spacing-md);
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
-.gallery-item {
+/* Revealed by the script once the first layout pass has run (prevents a
+   pre-layout flash of mis-sized tiles). */
+.puzzle-grid.ready { opacity: 1; }
+
+/* Loading / empty / error message for the live-loaded puzzle */
+.puzzle-status {
+    text-align: center;
+    color: var(--al-text-secondary);
+    font-size: var(--font-size-base);
+    padding: var(--spacing-3xl) 0;
+    margin: 0;
+}
+
+.puzzle-item {
     position: relative;
     margin: 0;
+    /* Sensible default span until the script measures the real media. */
+    grid-row-end: span 26;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid rgba(110, 93, 168, 0.2);
@@ -227,50 +261,66 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-/* Let standout pieces span two columns on wider grids */
-.gallery-item.wide { grid-column: span 2; }
-
-.gallery-item:hover {
+.puzzle-item:hover {
     transform: translateY(-6px);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
     border-color: var(--al-accent);
+    z-index: 2;
 }
 
-.gallery-item img,
-.gallery-item video {
+.puzzle-inner {
+    display: block;
+    line-height: 0;
+}
+
+/* Natural aspect ratio is what drives the puzzle — do not crop. */
+.puzzle-item img,
+.puzzle-item video {
     width: 100%;
-    height: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
+    height: auto;
     display: block;
 }
 
-.gallery-item figcaption {
+.puzzle-item figcaption {
     position: absolute;
     inset: auto 0 0 0;
+    z-index: 2;
     padding: var(--spacing-md);
     font-size: var(--font-size-sm);
+    line-height: 1.3;
     color: var(--al-white);
     background: linear-gradient(180deg, transparent 0%, rgba(15, 15, 15, 0.85) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-.gallery-item:hover figcaption { opacity: 1; }
+.puzzle-item:hover figcaption { opacity: 1; }
 
+/* Media-type icon badge (image / gif / video). A small branded chip so the
+   indicator stands out clearly from the content it sits on top of. */
 .media-badge {
     position: absolute;
     top: var(--spacing-sm);
     left: var(--spacing-sm);
     z-index: 2;
-    padding: 2px var(--spacing-sm);
-    border-radius: 6px;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-medium);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: rgba(110, 93, 168, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     color: var(--al-white);
+    background: linear-gradient(135deg, var(--al-accent) 0%, var(--al-accent-alt) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.media-badge svg {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
 
 /* Graceful fallback when a media file is missing/unset.
@@ -283,7 +333,6 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 100%;
     aspect-ratio: 16 / 9;
     color: var(--al-text-secondary);
     font-size: var(--font-size-sm);
@@ -410,6 +459,10 @@
 }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1080px) {
+    .puzzle-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 768px) {
     .facility-hero .container,
     .feature-row {
@@ -418,11 +471,12 @@
     }
 
     .facility-hero-copy h1 { font-size: var(--font-size-5xl); }
+    .facility-intro h1 { font-size: var(--font-size-5xl); }
 
     /* Keep media above text on every feature row when stacked */
     .feature-row:nth-child(even) .feature-media { order: 0; }
 
-    .gallery-item.wide { grid-column: span 1; }
+    .puzzle-grid { grid-template-columns: repeat(2, 1fr); }
 
     .section-head h2 { font-size: var(--font-size-4xl); }
 }
