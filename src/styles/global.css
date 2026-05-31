@@ -19,6 +19,7 @@
     --spacing-2xl: 3rem;
     --spacing-3xl: 4rem;
     --spacing-4xl: 5rem;
+    --spacing-5xl: 7rem;
 
     /* Breakpoints (for reference in media queries) */
     --mobile: 480px;
@@ -699,7 +700,6 @@ body, html {
 
 /* Connect Section */
 .connect-section {
-    min-height: 100vh;
     padding: var(--spacing-4xl) 0;
     background: linear-gradient(135deg, #222232 0%, var(--al-bg-secondary) 100%);
     position: relative;
@@ -740,6 +740,20 @@ body, html {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    gap: var(--spacing-md);
+}
+
+/* Centered strip of social icons for the bottom of a page (<SocialBar />). */
+.social-bar {
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    border-top: 1px solid rgba(110, 93, 168, 0.2);
+}
+
+.social-bar__icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     gap: var(--spacing-md);
 }
 
@@ -1039,31 +1053,6 @@ body, html {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(110, 93, 168, 0.4);
     border-color: var(--al-accent-alt);
-}
-
-/* --- Contact backend under construction -----------------------------------
-   The /contact form posts to an SES backend that isn't live yet, so every link
-   that leads there is disabled site-wide and dimmed. The Get Involved CTAs also
-   carry a "Coming soon" pill (.cta-soon, in ConnectSection.astro). Delete this
-   block and that pill once the backend ships. */
-a[href="/contact"] {
-    pointer-events: none;
-    cursor: default;
-    opacity: 0.5;
-}
-
-.cta-soon {
-    align-self: center;
-    margin-top: var(--spacing-xs);
-    padding: 3px 12px;
-    border-radius: 999px;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-medium);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--al-accent-alt);
-    background: rgba(70, 179, 230, 0.12);
-    border: 1px solid rgba(70, 179, 230, 0.35);
 }
 
 /* Footer Section */

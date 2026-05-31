@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/contact.css';
+import SocialBar from '../components/SocialBar.astro';
 
 const pageTitle = "Get in Touch - Allerium Labs";
 const pageDescription = "Reach out to discuss projects, collaborations, or just say hello.";
@@ -47,44 +48,22 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
       <!-- Contact Form Section -->
       <section class="contact-form-section">
         <div class="container">
-          <!-- The form posts to an SES backend that isn't live yet. Until it is,
-               the form below is inert and we point people at email instead. -->
-          <div class="contact-construction" role="status">
-            <span class="contact-construction-icon" aria-hidden="true">🚧</span>
-            <div class="contact-construction-text">
-              <strong>Our contact form is under construction.</strong>
-              <p>It isn't sending messages just yet. In the meantime, reach us directly at <a href="mailto:alleriumlabs@proton.me">alleriumlabs@proton.me</a> — we'd love to hear from you.</p>
-            </div>
-          </div>
-
           <div class="contact-wrapper">
             <!-- Contact Info -->
             <div class="contact-info">
               <h2>Let's Connect</h2>
               <p>
-                Whether you're interested in game development, 3D graphics, 
-                or just want to chat about tech, I'm always open to new conversations.
+                Whether you want to talk game dev, linguistics, Star Wars, whatever —
+                I'm always open to new conversations. <em>Et si vous parlez français… tant mieux ! Moi aussi.</em>
               </p>
-              
+
               <div class="contact-methods">
                 <div class="contact-method">
                   <div class="method-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                      <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
-                  </div>
-                  <div class="method-info">
-                    <h3>Email</h3>
-                    <p>alleriumlabs@proton.me</p>
-                  </div>
-                </div>
-                
-                <div class="contact-method">
-                  <div class="method-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 19c-5 0-8-3-8-8s4-8 9-8 8 3 8 8-4 8-8 8z"></path>
-                      <path d="M8.5 17.5l5.5-9.5"></path>
+                    <svg class="clock-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <line class="clock-hand-hour" x1="12" y1="12" x2="15.5" y2="14"></line>
+                      <line class="clock-hand-minute" x1="12" y1="12" x2="12" y2="7"></line>
                     </svg>
                   </div>
                   <div class="method-info">
@@ -97,8 +76,7 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
 
             <!-- Contact Form -->
             <div class="contact-form-container">
-              <!-- inert: non-interactive + removed from tab order while the backend is down -->
-              <form class="contact-form is-disabled" id="contactForm" inert>
+              <form class="contact-form" id="contactForm">
                 <div class="form-group">
                   <label for="name">Name</label>
                   <input 
@@ -106,7 +84,7 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
                     id="name" 
                     name="name" 
                     required 
-                    placeholder="Your name"
+                    placeholder="R. J. MacReady"
                   />
                   <span class="error-message" id="nameError"></span>
                 </div>
@@ -118,7 +96,7 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
                     id="email" 
                     name="email" 
                     required 
-                    placeholder="your.email@example.com"
+                    placeholder="thatsnotchilds@example.com"
                   />
                   <span class="error-message" id="emailError"></span>
                 </div>
@@ -130,7 +108,7 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
                     name="message" 
                     required 
                     rows="6" 
-                    placeholder="Tell me about your project, idea, or just say hello..."
+                    placeholder=""
                   ></textarea>
                   <span class="error-message" id="messageError"></span>
                 </div>
@@ -154,6 +132,9 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
           </div>
         </div>
       </section>
+
+      <!-- Social icons, centered across the bottom -->
+      <SocialBar />
 
       <!-- Footer -->
       <footer class="contact-footer">
@@ -306,25 +287,58 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
           this.setLoading(true);
           
           try {
-            const response = await fetch(this.apiUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data)
-            });
+            let response: Response;
+            try {
+              response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+              });
+            } catch (networkError) {
+              // fetch() only rejects on network-level failures — no response was
+              // received. The usual culprit is a CORS preflight the API didn't
+              // answer, a wrong/unreachable endpoint, or lost connectivity.
+              console.error('Network/CORS error reaching contact API:', networkError);
+              throw new Error(
+                "Couldn't reach the server. This is usually a CORS or connectivity issue — check your connection and the browser console for details."
+              );
+            }
 
-            const result = await response.json();
+            // The API returns JSON ({ message } on success, { error } otherwise),
+            // but a misconfigured gateway can return empty/non-JSON, so guard it.
+            let result: { message?: string; error?: string } | null = null;
+            try {
+              result = await response.json();
+            } catch {
+              /* non-JSON or empty body — fall back to status-based messaging */
+            }
 
             if (response.ok) {
               this.showMessage('Thank you! Your message has been sent successfully.', 'success');
               this.form.reset();
-            } else {
-              throw new Error(result.error || 'Failed to send message');
+              return;
             }
+
+            // HTTP error: surface the status code plus any server-provided reason.
+            const serverMessage = result?.error;
+            let detail: string;
+            if (response.status === 400) {
+              detail = serverMessage || 'Some fields were missing or invalid.';
+            } else if (response.status === 500) {
+              detail = serverMessage || 'The server couldn\'t send the message. Please try again shortly.';
+            } else {
+              detail = serverMessage || response.statusText || 'Unexpected response.';
+            }
+            throw new Error(`Error ${response.status}: ${detail}`);
           } catch (error) {
             console.error('Form submission error:', error);
-            this.showMessage('Sorry, there was an error sending your message. Please try again.', 'error');
+            const message =
+              error instanceof Error
+                ? error.message
+                : 'Sorry, there was an error sending your message. Please try again.';
+            this.showMessage(message, 'error');
           } finally {
             this.setLoading(false);
           }

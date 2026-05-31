@@ -307,55 +307,27 @@
         font-size: var(--font-size-2xl);
     }
 }
-/* --- Under-construction notice ---------------------------------------------
-   Shown while the contact form backend (AWS SES) is not yet live. The form
-   below is rendered inert + dimmed; this banner explains why and offers email
-   as the working alternative. Remove both once the backend ships. */
-.contact-construction {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    max-width: 720px;
-    margin: 0 auto var(--spacing-2xl);
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-radius: 16px;
-    background: rgba(110, 93, 168, 0.12);
-    border: 1px solid rgba(110, 93, 168, 0.4);
-    box-shadow: 0 8px 32px rgba(110, 93, 168, 0.12);
+
+/* Response-time clock: the minute hand rests, then sweeps a full turn every few
+   seconds — a subtle "time passing" cue. The hour hand stays put. Gated behind
+   prefers-reduced-motion per the site's motion rules. */
+.clock-hand-minute {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+    animation: clock-minute-sweep 6s ease-in-out infinite;
 }
 
-.contact-construction-icon {
-    font-size: var(--font-size-2xl);
-    line-height: 1.2;
-    flex-shrink: 0;
+@keyframes clock-minute-sweep {
+    0%, 60% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-.contact-construction-text strong {
-    display: block;
-    color: var(--al-text-primary);
-    font-size: var(--font-size-lg);
-    margin-bottom: var(--spacing-xs);
-}
-
-.contact-construction-text p {
-    color: var(--al-text-secondary);
-    line-height: 1.5;
-    margin: 0;
-}
-
-.contact-construction-text a {
-    color: var(--al-accent-alt);
-    text-decoration: none;
-    font-weight: var(--font-medium);
-}
-
-.contact-construction-text a:hover {
-    text-decoration: underline;
-}
-
-/* The form is kept on the page for context but disabled (also `inert` in markup). */
-.contact-form.is-disabled {
-    opacity: 0.5;
-    filter: grayscale(0.3);
-    user-select: none;
+@media (prefers-reduced-motion: reduce) {
+    .clock-hand-minute {
+        animation: none;
+    }
 }
