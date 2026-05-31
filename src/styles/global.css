@@ -282,6 +282,11 @@ body, html {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.4s ease, visibility 0.4s ease;
+    /* The container's bounding box spans the button + the (mostly hidden) panel
+       footprint. Left transparent to clicks it would swallow pointer events over
+       page content beneath it (e.g. the leftmost social tiles); only the button
+       and the open panel opt back in. */
+    pointer-events: none;
 }
 
 .info-widget.visible {
@@ -294,6 +299,7 @@ body, html {
     width: 52px;
     height: 52px;
     flex-shrink: 0;
+    pointer-events: auto;
     border-radius: 50%;
     border: 1px solid rgba(110, 93, 168, 0.5);
     background: rgba(42, 42, 58, 0.6);
@@ -627,6 +633,10 @@ body, html {
     gap: var(--spacing-2xl);
 }
 
+.connect-category {
+    text-align: center;
+}
+
 .connect-category h3 {
     font-size: var(--font-size-2xl);
     margin-bottom: var(--spacing-lg);
@@ -635,15 +645,17 @@ body, html {
 
 .social-links {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--spacing-md);
 }
 
 .social-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    justify-content: center;
+    width: 64px;
+    height: 64px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -654,6 +666,14 @@ body, html {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+}
+
+.social-card svg {
+    transition: transform 0.3s ease;
+}
+
+.social-card:hover svg {
+    transform: scale(1.12);
 }
 
 .social-card::before {
@@ -674,7 +694,7 @@ body, html {
 }
 
 .social-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-6px) scale(1.06);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -699,6 +719,36 @@ body, html {
     box-shadow: 0 20px 40px rgba(0, 133, 255, 0.2), 0 0 0 1px rgba(0, 133, 255, 0.3);
 }
 
+.social-card.instagram {
+    border-color: rgba(225, 48, 108, 0.3);
+    box-shadow: 0 8px 32px rgba(225, 48, 108, 0.1);
+}
+
+.social-card.instagram:hover {
+    border-color: rgba(225, 48, 108, 0.6);
+    box-shadow: 0 20px 40px rgba(225, 48, 108, 0.2), 0 0 0 1px rgba(225, 48, 108, 0.3);
+}
+
+.social-card.tiktok {
+    border-color: rgba(37, 244, 238, 0.3);
+    box-shadow: 0 8px 32px rgba(37, 244, 238, 0.1);
+}
+
+.social-card.tiktok:hover {
+    border-color: rgba(37, 244, 238, 0.6);
+    box-shadow: 0 20px 40px rgba(37, 244, 238, 0.2), 0 0 0 1px rgba(37, 244, 238, 0.3);
+}
+
+.social-card.x {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.06);
+}
+
+.social-card.x:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
 .social-card.discord {
     border-color: rgba(88, 101, 242, 0.3);
     box-shadow: 0 8px 32px rgba(88, 101, 242, 0.1);
@@ -709,57 +759,102 @@ body, html {
     box-shadow: 0 20px 40px rgba(88, 101, 242, 0.2), 0 0 0 1px rgba(88, 101, 242, 0.3);
 }
 
-.social-card.linkedin {
-    border-color: rgba(0, 119, 181, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 119, 181, 0.1);
+/* Under-construction state: non-interactive, dimmed icon, with a status badge */
+.social-card.under-construction {
+    cursor: default;
+    overflow: visible;
 }
 
-.social-card.linkedin:hover {
-    border-color: rgba(0, 119, 181, 0.6);
-    box-shadow: 0 20px 40px rgba(0, 119, 181, 0.2), 0 0 0 1px rgba(0, 119, 181, 0.3);
+.social-card.under-construction svg {
+    opacity: 0.5;
 }
 
-.social-icon {
+.social-card.under-construction:hover {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(88, 101, 242, 0.1);
+}
+
+.social-card.under-construction:hover::before {
+    opacity: 0;
+}
+
+.social-card.under-construction:hover svg {
+    transform: none;
+}
+
+/* Small status pill anchored to the corner of an icon tile */
+.social-badge {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-medium);
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    color: var(--al-accent-alt);
+    background: var(--al-bg-primary);
+    border: 1px solid rgba(70, 179, 230, 0.35);
+    white-space: nowrap;
+}
+
+/* Discord — a deliberately oversized "flagship" tile so the under-construction
+   community hub reads as a big deal rather than an afterthought. */
+.social-card.discord-feature {
+    width: 200px;
+    height: 200px;
+    border-radius: 28px;
+    margin-top: var(--spacing-md);
+    box-shadow: 0 12px 40px rgba(88, 101, 242, 0.18);
+}
+
+.social-card.discord-feature .discord-glyph {
+    width: 88px;
+    height: 88px;
+    opacity: 0.65; /* overrides the shared under-construction dim, scaled up */
+}
+
+.social-card.discord-feature .social-badge {
+    bottom: -10px;
+    padding: 4px 14px;
+    font-size: var(--font-size-sm);
+}
+
+/* Gear that straddles the top-left corner — the "under construction" signal */
+.gear-badge {
+    position: absolute;
+    top: -22px;
+    left: -22px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    color: var(--al-accent);
+    background: var(--al-bg-primary);
+    border: 1px solid rgba(110, 93, 168, 0.45);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    z-index: 2;
 }
 
-.social-card:hover .social-icon {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+.gear-badge svg {
+    width: 38px;
+    height: 38px;
+    opacity: 1; /* keep the gear bright even on the dimmed tile */
+    animation: gear-turn 9s linear infinite;
 }
 
-.social-icon svg {
-    transition: transform 0.3s ease;
+@keyframes gear-turn {
+    to { transform: rotate(360deg); }
 }
 
-.social-card:hover .social-icon svg {
-    transform: scale(1.1);
-}
-
-.social-content {
-    flex: 1;
-}
-
-.social-content h4 {
-    font-size: var(--font-size-lg);
-    margin: 0 0 var(--spacing-xs) 0;
-    color: var(--al-text-primary);
-    font-weight: var(--font-medium);
-}
-
-.social-content p {
-    color: var(--al-text-secondary);
-    font-size: var(--font-size-sm);
-    margin: 0;
-    line-height: 1.4;
+@media (prefers-reduced-motion: reduce) {
+    .gear-badge svg {
+        animation: none;
+    }
 }
 
 .involvement-options {
@@ -769,6 +864,10 @@ body, html {
 }
 
 .option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -779,6 +878,11 @@ body, html {
     position: relative;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(110, 93, 168, 0.1);
+}
+
+.option-card .cta-button {
+    display: block;
+    text-align: center;
 }
 
 .option-card::before {
@@ -1165,31 +1269,5 @@ body, html {
     .hero-content {
         padding: var(--spacing-lg);
     }
-}
-
-/* TEMPORARY: Disable "Get in Touch" links for AWS SES verification */
-/* Target only the specific contact links to avoid impacting other CTAs */
-a.cta-button[href="/contact"],
-a.footer-contact-link[href="/contact"] {
-    pointer-events: none !important;
-    cursor: not-allowed;
-    opacity: 0.6;
-    position: relative;
-}
-
-a.cta-button[href="/contact"]::after,
-a.footer-contact-link[href="/contact"]::after {
-    content: 'TEMP DISABLED';
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #e74c3c;
-    color: #ffffff;
-    padding: 2px 6px;
-    font-size: 10px;
-    border-radius: 4px;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-    z-index: 2;
 }
 
