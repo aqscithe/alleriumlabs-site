@@ -1,6 +1,7 @@
 ---
 import '../../styles/global.css';
 import '../../styles/the-facility.css';
+import ConnectSection from '../../components/ConnectSection.astro';
 
 // ---------------------------------------------------------------------------
 // The "Work in Progress" puzzle is populated at runtime from the general
@@ -80,6 +81,9 @@ const pageDescription =
           <p class="puzzle-status" id="puzzleStatus">Loading the latest…</p>
         </div>
       </section>
+
+      <!-- Connect Section (shared component) -->
+      <ConnectSection />
 
       <footer class="facility-footer">
         <div class="container">

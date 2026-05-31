@@ -1,6 +1,7 @@
 ---
 import '../../styles/global.css';
 import '../../styles/devlog.css';
+import ConnectSection from '../../components/ConnectSection.astro';
 
 // Get all devlog entries
 const devlogEntries = await Astro.glob('../../devlogs/*.md');
@@ -201,6 +202,9 @@ function formatDate(dateString: string) {
           </div>
         </div>
       </section>
+
+      <!-- Connect Section (shared component) -->
+      <ConnectSection />
 
       <!-- Footer -->
       <footer class="devlog-footer">

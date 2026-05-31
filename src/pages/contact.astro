@@ -47,6 +47,16 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
       <!-- Contact Form Section -->
       <section class="contact-form-section">
         <div class="container">
+          <!-- The form posts to an SES backend that isn't live yet. Until it is,
+               the form below is inert and we point people at email instead. -->
+          <div class="contact-construction" role="status">
+            <span class="contact-construction-icon" aria-hidden="true">🚧</span>
+            <div class="contact-construction-text">
+              <strong>Our contact form is under construction.</strong>
+              <p>It isn't sending messages just yet. In the meantime, reach us directly at <a href="mailto:alleriumlabs@proton.me">alleriumlabs@proton.me</a> — we'd love to hear from you.</p>
+            </div>
+          </div>
+
           <div class="contact-wrapper">
             <!-- Contact Info -->
             <div class="contact-info">
@@ -87,7 +97,8 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
 
             <!-- Contact Form -->
             <div class="contact-form-container">
-              <form class="contact-form" id="contactForm">
+              <!-- inert: non-interactive + removed from tab order while the backend is down -->
+              <form class="contact-form is-disabled" id="contactForm" inert>
                 <div class="form-group">
                   <label for="name">Name</label>
                   <input 
