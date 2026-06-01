@@ -1,5 +1,16 @@
 /* Contact Page Styles */
 
+/* Honeypot field — kept in the DOM (and out of the a11y tree via aria-hidden in
+   markup) but pushed off-screen so real users never see or tab into it. Bots
+   that auto-fill every input give themselves away by populating it. */
+.hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 .contact-main {
     min-height: 100vh;
     background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);

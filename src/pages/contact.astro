@@ -77,6 +77,21 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
             <!-- Contact Form -->
             <div class="contact-form-container">
               <form class="contact-form" id="contactForm">
+                <!-- Honeypot: hidden from real users, but bots that blindly fill
+                     every field will populate it. Submissions with a non-empty
+                     value are silently dropped server-side. Not type="hidden" so
+                     naive bots still see it; hidden via CSS + aria-hidden. -->
+                <div class="hp-field" aria-hidden="true">
+                  <label for="website">Website</label>
+                  <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    tabindex="-1"
+                    autocomplete="off"
+                  />
+                </div>
+
                 <div class="form-group">
                   <label for="name">Name</label>
                   <input 
@@ -151,19 +166,28 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
         private submitBtn: HTMLButtonElement;
         private formMessage: HTMLElement;
         private apiUrl: string;
+        // Signed timestamp token minted by the API on page load. Sent back on
+        // submit so the server can reject submissions that arrive implausibly
+        // fast (bots) — the timestamp is HMAC-signed, so it can't be forged.
+        private token: { t: number; s: string } | null;
 
         constructor() {
           this.form = document.getElementById('contactForm') as HTMLFormElement;
           this.submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
           this.formMessage = document.getElementById('formMessage') as HTMLElement;
           this.apiUrl = 'https://29fr92m3j2.execute-api.us-west-2.amazonaws.com/contact-alabs';
-          
+          this.token = null;
+
           this.init();
         }
 
         init() {
+          // Mint the time-trap token now so the elapsed time measures how long
+          // the visitor actually spent on the page before submitting.
+          this.fetchToken();
+
           this.form.addEventListener('submit', (e: Event) => this.handleSubmit(e));
-          
+
           // Add real-time validation
           ['name', 'email', 'message'].forEach(field => {
             const input = document.getElementById(field) as HTMLInputElement;
@@ -172,6 +196,16 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
               input.addEventListener('input', () => this.clearError(field));
             }
           });
+        }
+
+        async fetchToken() {
+          try {
+            const res = await fetch(this.apiUrl, { method: 'GET' });
+            if (res.ok) this.token = await res.json();
+          } catch {
+            // Non-fatal: if minting fails, the submit handler retries, and the
+            // server will ask the user to refresh if no valid token arrives.
+          }
         }
 
         validateField(fieldName: string) {
@@ -276,12 +310,18 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
             return;
           }
 
+          // Make sure we have a time-trap token (page-load mint may have failed).
+          if (!this.token) await this.fetchToken();
+
           // Get form data
           const formData = new FormData(this.form);
           const data = {
             name: formData.get('name'),
             email: formData.get('email'),
-            message: formData.get('message')
+            message: formData.get('message'),
+            website: formData.get('website'), // honeypot — real users leave this empty
+            t: this.token?.t, // signed timestamp + signature (time-trap)
+            s: this.token?.s
           };
 
           this.setLoading(true);
@@ -341,6 +381,10 @@ const pageDescription = "Reach out to discuss projects, collaborations, or just 
             this.showMessage(message, 'error');
           } finally {
             this.setLoading(false);
+            // Mint a fresh token for any subsequent attempt — the previous one
+            // may now be stale (e.g. expired), and each send gets its own window.
+            this.token = null;
+            this.fetchToken();
           }
         }
       }
