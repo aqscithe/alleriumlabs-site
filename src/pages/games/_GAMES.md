@@ -34,15 +34,32 @@ git history; the `.related-devlogs` CSS and `/devlog` routes are still in place.
 
 The puzzle is **not** a hard-coded manifest. On page load, client-side JS lists the
 general content bucket and builds the tiles from whatever is there — so a content
-manager just uploads files and they appear on the next page load (newest first).
+manager just uploads files and they appear on the next page load, grouped into
+month sections (newest month first) forming a development timeline.
 
 - Bucket: `https://alleriumlabs-general-content.s3.us-west-2.amazonaws.com`, folders
   `image/`, `gif/`, `video/` (distinct from the devlog content bucket).
 - Recognised types: images `jpg/jpeg/png/webp/avif`, `gif`, video `mp4/webm/mov/m4v`.
-- The on-hover caption is derived from the filename
-  (`old-lab-corridor.jpg` → "Old lab corridor"), so **name files meaningfully**.
+
+### Filename convention: `YYYY-MM-DD_descriptive-slug.ext`
+
+Example: `2026-05-14_old-lab-corridor.jpg`.
+
+- **Date prefix (ISO, optional but expected)** is the *source of truth* for "when
+  posted". It drives the bottom-right date stamp on each tile and which month
+  section the tile lands in. We deliberately do **not** use the S3 `LastModified`
+  time, because re-uploading or tweaking a clip would change it and silently
+  re-date/re-order the piece. The filename date is immutable across edits.
+- **Separator** between date and slug is `_` (a `-` also works); the date uses
+  `-` internally. Day precision; `YYYY-MM-DD` also sorts chronologically.
+- **Descriptive slug** becomes the on-hover caption (`old-lab-corridor` → "Old lab
+  corridor"), so **name files meaningfully**.
+- **Legacy / un-dated files** (no date prefix) still work — they fall back to
+  `LastModified` for the stamp and month grouping. Rename them with a date prefix
+  to make the date accurate and stable.
 - Layout adapts to each piece's natural aspect ratio (portrait/square = 1 col,
-  landscape = 2, panoramic ≥ 2.4:1 = 3); `grid-auto-flow: dense` packs them.
+  landscape = 2, panoramic ≥ 2.4:1 = 3); each month's grid packs independently
+  with `grid-auto-flow: dense`.
 - Failed/blocked loads degrade to a `.media-fallback` panel; if the whole listing
   can't load, the section shows a friendly message and logs setup guidance.
 

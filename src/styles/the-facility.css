@@ -248,6 +248,34 @@
     margin: 0;
 }
 
+/* Each month is its own block: a header + its own packed grid. Forms a
+   top-down timeline of when work was posted (newest month first). */
+.puzzle-month {
+    margin-bottom: var(--spacing-4xl);
+}
+
+.puzzle-month:last-child {
+    margin-bottom: 0;
+}
+
+/* Month header with a trailing rule that fades into the section. */
+.month-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: 0 0 var(--spacing-lg);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--al-text-primary);
+}
+
+.month-head::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(110, 93, 168, 0.45), transparent);
+}
+
 .puzzle-item {
     position: relative;
     margin: 0;
@@ -324,6 +352,26 @@
     width: 16px;
     height: 16px;
     display: block;
+}
+
+/* "Posted" date stamp — mirrors the caption's treatment (revealed on hover,
+   same text styling) but anchored to the bottom-right corner. It sits over the
+   caption's bottom gradient, so it needs no background of its own. */
+.media-date {
+    position: absolute;
+    inset: auto 0 0 auto;
+    z-index: 3;
+    padding: var(--spacing-md);
+    font-size: var(--font-size-sm);
+    line-height: 1.3;
+    color: var(--al-white);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.puzzle-item:hover .media-date {
+    opacity: 1;
 }
 
 /* Graceful fallback when a media file is missing/unset.

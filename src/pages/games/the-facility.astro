@@ -77,7 +77,7 @@ const pageDescription =
             <p>Images, gifs and clips captured straight from the project as it develops.</p>
           </div>
 
-          <div class="puzzle-grid" id="puzzleGrid"></div>
+          <div class="puzzle-sections" id="puzzleSections"></div>
           <p class="puzzle-status" id="puzzleStatus">Loading the latest…</p>
         </div>
       </section>
@@ -118,8 +118,24 @@ const pageDescription =
         kind: Kind;
         url: string;
         label: string;
-        modified: number;
+        modified: number;   // S3 LastModified (ms) — fallback only
+        postedMs: number;    // authored date if known, else LastModified — drives sort/group
+        dateLabel: string;   // e.g. "14 May 2026"
+        monthKey: string;    // e.g. "2026-05" (sort/group key)
+        monthLabel: string;  // e.g. "May 2026" (section header)
       }
+
+      const MONTHS = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+
+      // Authored date lives in the filename as an ISO prefix, separated from the
+      // descriptive slug by "_" or "-": e.g. "2026-05-14_old-lab-corridor.jpg".
+      // This is the source of truth for "when posted" — unlike LastModified, it
+      // survives re-uploads/edits of the same key. Files without the prefix fall
+      // back to LastModified (see labelFromSlug + the fallback in listPrefix).
+      const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})[_-](.+)$/;
 
       const VIDEO_MIME: Record<string, string> = {
         mp4: 'video/mp4',
@@ -147,11 +163,23 @@ const pageDescription =
       const urlForKey = (key: string) =>
         `${CONTENT_BASE}/${key.split('/').map(encodeURIComponent).join('/')}`;
 
-      // Turn "image/old-lab-corridor.jpg" → "Old lab corridor".
-      function labelFromKey(key: string, prefix: string): string {
-        const name = key.slice(prefix.length).replace(/\.[^.]+$/, '');
-        const words = name.replace(/[-_]+/g, ' ').trim();
-        return words ? words.charAt(0).toUpperCase() + words.slice(1) : name;
+      // Split a key into its authored date (if prefixed) and descriptive slug.
+      // "image/2026-05-14_old-lab-corridor.jpg" → date 2026-05-14, slug "old-lab-corridor".
+      // "image/old-lab-corridor.jpg" (legacy) → date null, slug "old-lab-corridor".
+      function parseName(key: string, prefix: string): {
+        date: { y: number; m: number; d: number } | null;
+        slug: string;
+      } {
+        const base = (key.slice(prefix.length).split('/').pop() ?? '').replace(/\.[^.]+$/, '');
+        const m = DATE_RE.exec(base);
+        if (m) return { date: { y: +m[1], m: +m[2], d: +m[3] }, slug: m[4] };
+        return { date: null, slug: base };
+      }
+
+      // Turn "old-lab-corridor" → "Old lab corridor".
+      function labelFromSlug(slug: string): string {
+        const words = slug.replace(/[-_]+/g, ' ').trim();
+        return words ? words.charAt(0).toUpperCase() + words.slice(1) : slug;
       }
 
       // List one folder, following pagination (S3 returns ≤1000 keys per call).
@@ -175,11 +203,33 @@ const pageDescription =
             // Skip folder placeholder objects and wrong file types.
             if (!key || key.endsWith('/') || size === '0') return;
             if (!source.exts.includes(extOf(key))) return;
+
+            const modified = Date.parse(mod) || 0;
+            const { date, slug } = parseName(key, source.prefix);
+
+            // Authored date drives display + ordering; legacy un-dated files fall
+            // back to LastModified (rename them with a date prefix to fix).
+            let y: number, mo: number, d: number, postedMs: number;
+            if (date) {
+              ({ y, m: mo, d } = date);
+              postedMs = Date.UTC(y, mo - 1, d); // UTC: sort-only, avoids TZ drift
+            } else {
+              const dt = new Date(modified);
+              y = dt.getFullYear();
+              mo = dt.getMonth() + 1;
+              d = dt.getDate();
+              postedMs = modified;
+            }
+
             pieces.push({
               kind: source.kind,
               url: urlForKey(key),
-              label: labelFromKey(key, source.prefix),
-              modified: Date.parse(mod) || 0,
+              label: labelFromSlug(slug),
+              modified,
+              postedMs,
+              dateLabel: `${d} ${MONTHS[mo - 1]} ${y}`,
+              monthKey: `${y}-${String(mo).padStart(2, '0')}`,
+              monthLabel: `${MONTHS[mo - 1]} ${y}`,
             });
           });
 
@@ -207,6 +257,13 @@ const pageDescription =
         badge.title = KIND_LABEL[piece.kind];
         badge.innerHTML = ICONS[piece.kind];
         inner.appendChild(badge);
+
+        // "Posted" date stamp, bottom-right — always visible so the timeline is
+        // clear at a glance (the descriptive caption still reveals on hover).
+        const dateChip = document.createElement('span');
+        dateChip.className = 'media-date';
+        dateChip.textContent = piece.dateLabel;
+        inner.appendChild(dateChip);
 
         let mediaEl: HTMLImageElement | HTMLVideoElement;
         if (piece.kind === 'video') {
@@ -251,7 +308,9 @@ const pageDescription =
       }
 
       // ----- Aspect-ratio puzzle layout -----
-      const grid = document.getElementById('puzzleGrid');
+      // The container holds one .puzzle-grid per month; each grid packs its own
+      // tiles independently.
+      const container = document.getElementById('puzzleSections');
       const statusEl = document.getElementById('puzzleStatus');
 
       function naturalRatio(item: Element): number {
@@ -270,9 +329,7 @@ const pageDescription =
         return getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length;
       }
 
-      function layout(): void {
-        if (!grid) return;
-        const g = grid as HTMLElement;
+      function layoutGrid(g: HTMLElement): void {
         const styles = getComputedStyle(g);
         const rowUnit = parseFloat(styles.gridAutoRows) || 8;
         const gap = parseFloat(styles.rowGap) || 0;
@@ -299,6 +356,12 @@ const pageDescription =
         g.classList.add('ready');
       }
 
+      function layout(): void {
+        container
+          ?.querySelectorAll<HTMLElement>('.puzzle-grid')
+          .forEach((g) => layoutGrid(g));
+      }
+
       let scheduled = false;
       function scheduleLayout(): void {
         if (scheduled) return;
@@ -314,23 +377,55 @@ const pageDescription =
       }
 
       async function loadPuzzle(): Promise<void> {
-        if (!grid) return;
+        if (!container) return;
         try {
           const results = await Promise.all(SOURCES.map(listPrefix));
-          const pieces = results.flat().sort((a, b) => b.modified - a.modified);
+          const pieces = results.flat().sort((a, b) => b.postedMs - a.postedMs);
 
           if (pieces.length === 0) {
             setStatus('No media yet — check back soon.');
             return;
           }
 
+          // Group into months, preserving the newest-first order from the sort.
+          const groups: { label: string; items: Piece[] }[] = [];
+          const indexByMonth = new Map<string, number>();
+          for (const p of pieces) {
+            let i = indexByMonth.get(p.monthKey);
+            if (i === undefined) {
+              i = groups.length;
+              indexByMonth.set(p.monthKey, i);
+              groups.push({ label: p.monthLabel, items: [] });
+            }
+            groups[i].items.push(p);
+          }
+
           const frag = document.createDocumentFragment();
-          pieces.forEach((p) => frag.appendChild(createItem(p)));
-          grid.replaceChildren(frag);
+          for (const group of groups) {
+            const section = document.createElement('section');
+            section.className = 'puzzle-month';
+
+            const head = document.createElement('h3');
+            head.className = 'month-head';
+            head.textContent = group.label;
+            section.appendChild(head);
+
+            const monthGrid = document.createElement('div');
+            monthGrid.className = 'puzzle-grid';
+            group.items.forEach((p) => monthGrid.appendChild(createItem(p)));
+            section.appendChild(monthGrid);
+
+            frag.appendChild(section);
+          }
+          container.replaceChildren(frag);
           statusEl?.remove();
 
           scheduleLayout();
-          window.setTimeout(() => grid.classList.add('ready'), 1500); // safety reveal
+          // Safety reveal in case some media never fires load/loadedmetadata.
+          window.setTimeout(
+            () => container.querySelectorAll('.puzzle-grid').forEach((g) => g.classList.add('ready')),
+            1500
+          );
         } catch (err) {
           console.error(
             '[the-facility] Could not load media from the bucket. Check that the ' +
@@ -356,7 +451,7 @@ const pageDescription =
         content.innerHTML = '';
       }
 
-      grid?.addEventListener('click', (e) => {
+      container?.addEventListener('click', (e) => {
         const item = (e.target as Element).closest('.puzzle-item');
         if (!item || item.classList.contains('media-missing') || !lightbox || !content) return;
         const media = item.querySelector('img, video');
